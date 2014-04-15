@@ -2,20 +2,37 @@ race:
   tick
   car -- bot name_color
   map_id
-  ?throttle -- sent *before* the tick
+  ?throttle -- sent *before* the tick - good point
   ?switch_lane -- sent *before* the tick
-  ?velocity_x
-  ?velocity_y
-  ?coord_x
-  ?coord_y
+  ?velocity_x --meh
+  ?velocity_y --meh
+  ?coord_x --chyba przydaje się przy animowaniu wypadania z trasy
+  ?coord_y --meh
   angle
-  angle_offset
+  angle_offset -- co to?
   lap
   piece_id
   piece_pos
   lane_start
   lane_end
   is_crashed
+
+//my suggestion, for simplified analysis:
+race:
+  tick
+  car
+  map_id
+  throttle
+  switch_lane: {-1, 0, 1}
+  lane_start
+  lane_end
+  angle
+  lane_radius
+  piece_index: int
+  in_piece_distance: float
+  total_distance: float
+  is_crashed: {0, 1}
+
 
 map: #this actually should be a json or two csvs
   map_id -- conventionally map name
