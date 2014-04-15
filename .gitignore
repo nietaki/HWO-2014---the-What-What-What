@@ -1,3 +1,4 @@
 log
 bot.pid
 .idea
+*.pyc
