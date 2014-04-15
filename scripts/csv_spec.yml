@@ -1,0 +1,32 @@
+#? notes optional
+race:
+  - map_id
+  - tick
+  - car
+  - throttle #? sent *before* the tick
+  - switch_lane #? sent *before* the tick
+  - velocity_x #?
+  - velocity_y #?
+  - coord_x #?
+  - coord_y #?
+  - angle
+  - angle_offset
+  - lap
+  - piece_id
+  - piece_pos
+  - lane_start
+  - lane_end
+  - is_crashed
+
+map: #this actually should be a json or two csvs
+  - map_id #conventionally map name
+  - lanes:
+    - lane_id
+    - lane_dist
+  - pieces:
+    - piece_id
+    - piece_straight #boolean
+    - piece_length #?
+    - piece_radius #?
+    - piece_angle #?
+    - piece_switch #boolean
