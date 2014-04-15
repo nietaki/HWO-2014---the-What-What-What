@@ -19,7 +19,7 @@ jsonStream = client.pipe(JSONStream.parse())
 
 jsonStream.on 'data', (data) ->
   if data.msgType == 'carPositions'
-    send {msgType: "throttle", data: 0.5}
+    send {msgType: "throttle", data: 1}
   else
     if data.msgType == 'join'
       console.log 'Joined'
