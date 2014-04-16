@@ -13,6 +13,19 @@ class Track(object):
         self.track_pieces = self.track['pieces']
         self.lanes = self.track['lanes']
 
+    def true_radius(self, piece_index, lane):
+        distance_from_center = self.lanes[lane]['distanceFromCenter']
+        current_piece = self.track_pieces[piece_index]
+        true_radius = current_piece['radius']
+        angle = current_piece['angle']
+        if angle > 0:
+            #right hand turn
+            true_radius -= distance_from_center
+        else:
+            #left hand turn
+            true_radius += distance_from_center
+        return true_radius
+
     def true_piece_length(self, piece_index, lane):
         current_piece = self.track_pieces[piece_index]
         if 'length' in current_piece:
@@ -21,17 +34,8 @@ class Track(object):
         else:
             #bend
             angle = current_piece['angle']
-
             proportion = abs(angle) / 360.0
-            distance_from_center = self.lanes[lane]['distanceFromCenter']
-            true_radius = current_piece['radius']
-            if(angle > 0):
-                #right hand turn
-                true_radius -= distance_from_center
-            else:
-                #left hand turn
-                true_radius += distance_from_center
-            return proportion * 2 * math.pi * true_radius
+            return proportion * 2 * math.pi * self.true_radius(piece_index, lane)
 
     def distance_diff(self, piece_index_1, in_piece_distance_1, piece_index_2, in_piece_distance_2, lane):
         if piece_index_1 == piece_index_2:

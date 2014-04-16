@@ -1,5 +1,6 @@
 import json
 import csv
+import pickle
 import socket
 import sys
 from Track import Track
@@ -15,12 +16,13 @@ class BaseBot(object):
     """the Track object"""
     track = None
 
-    csv_filename = "test.csv"
+    csv_filename = "test3.csv"
 
     def __init__(self, sock, name, key):
         self.sock = sock
         self.name = name
         self.key = key
+
 
     ## message handlers and senders ##
     def msg(self, msg_type, data):
@@ -59,6 +61,10 @@ class BaseBot(object):
     def on_game_init_base(self, data):
         race = data['race']
         self.track = Track(race['track'], race['raceSession'])
+
+        with open('debug_output/{0}_track.pickle'.format(self.track.track_id), 'wb') as handle:
+            pickle.dump(race['track'], handle)
+
         for car in race['cars']:
             car_object = CarState(self.track, car)
             self.cars[car_object.color] = car_object
@@ -79,11 +85,11 @@ class BaseBot(object):
             color = car_data['id']['color']
             self.cars[color].on_car_position(car_data, new_tick)
 
-
+        #FIXME this below is pretty ugly
         if self.csv_filename:
             if not new_tick:
-                self.csv_file = open(self.csv_filename, 'w')
-                self.writer = csv.DictWriter(self.csv_file, self.my_car().csv_row().keys(), dialect='excel')
+                self.csv_file = open('debug_output/' + self.csv_filename, 'wb')
+                self.writer = csv.DictWriter(self.csv_file, self.my_car().csv_keys(), dialect='excel')
                 self.writer.writeheader()
             self.writer.writerow(self.my_car().csv_row())
 
@@ -99,6 +105,10 @@ class BaseBot(object):
         print("BaseBot says: Someone crashed")
 
     def on_game_end_base(self, data):
+        if self.csv_file:
+            self.csv_file.close()
+            print("closing csv")
+
         self.on_game_end(data)
 
     def on_game_end(self, data):

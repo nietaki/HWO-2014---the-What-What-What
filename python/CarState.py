@@ -70,12 +70,12 @@ class CarState(object):
         self.track_piece_index = new_track_piece_index
         self.in_piece_distance = new_in_piece_distance
 
-        print("tick: {0}, tick_delta: {1},distance_delta: {2}, velocity: {3}, acceleration: {4}".
-              format(self.tick,
-                     self.tick_delta,
-                     self.distance_delta,
-                     self.velocity,
-                     self.acceleration))
+        #print("tick: {0}, tick_delta: {1},distance_delta: {2}, velocity: {3}, acceleration: {4}".
+        #      format(self.tick,
+        #             self.tick_delta,
+        #             self.distance_delta,
+        #             self.velocity,
+        #             self.acceleration))
 
     def csv_row(self):
         row = dict()
@@ -86,11 +86,27 @@ class CarState(object):
         row["lane_start"] = self.start_lane_index
         row["lane_end"] = self.end_lane_index
         row["slip_angle"] = self.slip_angle
-        row["lane_radius"] = "FIXME"
         row["piece_index"] = self.track_piece_index
+        row["lane_radius"] = self.track.true_piece_length(self.track_piece_index, self.end_lane_index)
         row["in_piece_distance"] = self.in_piece_distance
         row["distance_delta"] = self.distance_delta
         row["velocity"] = self.velocity
         row["acceleration"] = self.acceleration
         row["is_crashed"] = "FIXME"
         return row
+
+    def csv_keys(self):
+        return ["tick",
+                "car_id",
+                "map_id",
+                "throttle",
+                "distance_delta",
+                "velocity",
+                "acceleration",
+                "lane_radius",
+                "slip_angle",
+                "lane_start",
+                "lane_end",
+                "piece_index",
+                "in_piece_distance",
+                "is_crashed"]
