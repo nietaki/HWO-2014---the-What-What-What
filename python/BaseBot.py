@@ -1,36 +1,21 @@
 import json
+import csv
 import socket
 import sys
-
+from Track import Track
+from CarState import CarState
 
 class BaseBot(object):
-    #TODO update these and other values as we get input messages
-    cur_throttle = 0.0
-    #basic stats
-    tick = 0
-    tick_delta = 1
+    car_name = None
+    car_color = None
 
-    current_track_piece = 0
-    in_piece_distance = 0.0
-    distance_delta = 0.0
-    lane = 0
+    """a dictionary of car color -> CarState objects"""
+    cars = dict()
 
-    speed = 0.0
+    """the Track object"""
+    track = None
 
-    """basically speed delta"""
-    acceleration = 0.0
-
-    #from gameInit
-    track_id = None
-    track_pieces = None
-    lanes = None
-    car_dimensions = None
-    race_session = None
-
-    #from carPositions
-    #TODO add other car positions later
-    piece_position = None
-    slip_angle = 0.0
+    csv_filename = "test.csv"
 
     def __init__(self, sock, name, key):
         self.sock = sock
@@ -49,7 +34,9 @@ class BaseBot(object):
                                  "key": self.key})
 
     def throttle(self, throttle):
-        cur_throttle = throttle
+
+        self.cars[self.car_color].set_throttle(throttle)
+
         self.msg("throttle", throttle)
 
     def ping(self):
@@ -65,53 +52,41 @@ class BaseBot(object):
     def on_join(self, data):
         print("BaseBot says: Joined")
 
+    def on_your_car(self, data):
+        self.car_color = data['color']
+        self.car_name = data['name']
+
     def on_game_init_base(self, data):
         race = data['race']
-        track= race['track']
-        self.track_id = track['id']
-        self.track_pieces = track['pieces']
-        self.lanes = track['lanes']
-        self.car_dimensions = race['cars'][0]['dimensions']
-        self.race_session = race['raceSession']
+        self.track = Track(race['track'], race['raceSession'])
+        for car in race['cars']:
+            car_object = CarState(self.track, car)
+            self.cars[car_object.color] = car_object
         self.on_game_init(data)
 
     def on_game_init(self, data):
         print("BaseBot says: Race inited")
 
     def on_game_start_base(self, data):
-        self.on_game_start( data)
+        self.on_game_start(data)
 
     def on_game_start(self, data):
         print("BaseBot says: Race started")
 
     def on_car_positions_base(self, data, new_tick):
-        #TODO change this to work with multiple cars, preferably in a separate class, CarStats or sth
-        self.slip_angle = data[0]['angle']
-        self.piece_position = data[0]['piecePosition']
-        self.tick_delta = new_tick - self.tick
-        self.tick = new_tick
 
-        self.lane = self.piece_position['lane']['endLaneIndex']
-        new_track_piece_index = self.piece_position['pieceIndex']
-        new_in_piece_distance = self.piece_position['inPieceDistance']
-        #we don't want division by 0
-        if self.tick_delta > 0:
-            #FIXME this won't work correctly when switching on bends - the track lengths vary
-            self.distance_delta = self.distance_diff(self.current_track_piece, self.in_piece_distance,
-                                                     new_track_piece_index,
-                                                     new_in_piece_distance, self.lane)
-            new_speed = self.distance_delta/self.tick_delta
-            self.acceleration = (new_speed - self.speed)/self.tick_delta
-            self.speed = new_speed
+        for car_data in data:
+            color = car_data['id']['color']
+            self.cars[color].on_car_position(car_data, new_tick)
 
-        self.current_track_piece = new_track_piece_index
-        self.in_piece_distance = new_in_piece_distance
 
-        #print("tick: {0}, tick_delta: {1},distance_delta: {2}, speed: {3}, acceleration: {4}".format(self.tick,
-        #                                                                                       self.tick_delta,
-        #                                                                                       self.distance_delta,
-        #                                                                                       self.speed,
-        #                                                                                       self.acceleration))
+        if self.csv_filename:
+            if not new_tick:
+                self.csv_file = open(self.csv_filename, 'w')
+                self.writer = csv.DictWriter(self.csv_file, self.my_car().csv_row().keys(), dialect='excel')
+                self.writer.writeheader()
+            self.writer.writerow(self.my_car().csv_row())
+
         self.on_car_positions(data)
 
     def on_car_positions(self, data):
@@ -137,49 +112,14 @@ class BaseBot(object):
 
     ## other helpers/accessors ##
 
-    #"""returns an array of piece lengths"""
-    #def piece_lengths(self):
-    #    return map(lambda pc: pc['length'], self.track_pieces)
-
-    #"""this should be a lazy val, but it's not scala and we're not going to be effective ;)"""
-    #def total_track_length(self):
-    #    return sum(self.piece_lengths())
-
-    #def distance(self, lap_count, piece_index, piece_offset):
-    #    return self.total_track_length() * lap_count + \
-    #        sum(self.piece_lengths()[:piece_index]) + \
-    #        piece_offset
-
-    def true_piece_length(self, piece_index, lane):
-        current_piece = self.track_pieces[piece_index]
-        if 'length' in current_piece:
-            #straight
-            return current_piece['length']
-        else:
-            #bend
-            angle = current_piece['angle']
-
-            proportion = abs(angle) / 360.0
-            distance_from_center = self.lanes[lane]['distanceFromCenter']
-            true_radius = current_piece['radius']
-            if(angle > 0):
-                #right hand turn
-                true_radius -= distance_from_center
-            else:
-                #left hand turn
-                true_radius += distance_from_center
-            return proportion * 2 * 3.14159 * true_radius
-
-    def distance_diff(self, piece_index_1, in_piece_distance_1, piece_index_2, in_piece_distance_2, lane):
-        if piece_index_1 == piece_index_2:
-            return in_piece_distance_2 - in_piece_distance_1
-        else:
-            return self.true_piece_length(piece_index_1, lane) - in_piece_distance_1 + in_piece_distance_2
+    def my_car(self):
+        return self.cars[self.car_color]
 
     ## and the LOOP ##
     def msg_loop(self):
         msg_map = {
             'join': self.on_join,
+            'yourCar': self.on_your_car,
             'gameInit': self.on_game_init_base,
             'gameStart': self.on_game_start_base,
             'carPositions': self.on_car_positions_base,

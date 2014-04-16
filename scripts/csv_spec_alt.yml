@@ -1,0 +1,16 @@
+race:
+  tick
+  car_id
+  map_id
+  throttle
+  lane_start
+  lane_end
+  angle
+  lane_radius
+  piece_index
+  in_piece_distance
+  distance_delta
+  velocity
+  acceleration
+  is_crashed
+
