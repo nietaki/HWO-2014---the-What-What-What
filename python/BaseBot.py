@@ -18,6 +18,8 @@ class BaseBot(object):
 
     csv_filename = "test3.csv"
 
+    lines = []
+
     def __init__(self, sock, name, key):
         self.sock = sock
         self.name = name
@@ -87,11 +89,7 @@ class BaseBot(object):
 
         #FIXME this below is pretty ugly
         if self.csv_filename:
-            if not new_tick:
-                self.csv_file = open('debug_output/' + self.csv_filename, 'wb')
-                self.writer = csv.DictWriter(self.csv_file, self.my_car().csv_keys(), dialect='excel')
-                self.writer.writeheader()
-            self.writer.writerow(self.my_car().csv_row())
+            self.lines.append(self.my_car().csv_row())
 
         self.on_car_positions(data)
 
@@ -105,9 +103,12 @@ class BaseBot(object):
         print("BaseBot says: Someone crashed")
 
     def on_game_end_base(self, data):
-        if self.csv_file:
-            self.csv_file.close()
-            print("closing csv")
+        with open('debug_output/' + self.csv_filename, 'wb') as f:
+            writer = csv.DictWriter(f, self.my_car().csv_keys())
+            writer.writeheader()
+            writer.writerows(self.lines)
+
+        print("closing csv")
 
         self.on_game_end(data)
 
