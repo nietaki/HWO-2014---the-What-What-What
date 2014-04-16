@@ -10,13 +10,14 @@ race:
   - coord_x #?
   - coord_y #?
   - angle
-  - angle_offset
+  - angle_offset #?
   - lap
   - piece_id
   - piece_pos
   - lane_start
   - lane_end
   - is_crashed
+  - velocity
 
 map: #this actually should be a json or two csvs
   - map_id #conventionally map name

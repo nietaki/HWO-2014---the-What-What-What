@@ -7,24 +7,11 @@ from itertools import *
 from operator import *
 import csv
 import sys
+import yaml
 
-csv_columns = """map_id
-tick
-car
-throttle
-switch_lane
-velocity_x
-velocity_y
-coord_x
-coord_y
-angle
-angle_offset
-lap
-piece_id
-piece_pos
-lane_start
-lane_end
-is_crashed""".strip().split() #TODO: read from spec
+spec = open('csv_spec.yml')
+csv_columns = yaml.load(spec.read())['race']
+spec.close()
 
 filename = (len(sys.argv) == 2 and sys.argv[1]) or "BYAW0P3YPS31LXW035Y7"
 curl = """/usr/bin/curl 'https://hwo2014-racedata-prod.s3.amazonaws.com/test-races/%s.json' -H 'Pragma: no-cache' -H 'Origin: https://helloworldopen.com' -H 'Accept-Encoding: gzip,deflate,sdch' -H 'Accept-Language: en-US,en;q=0.8,pl;q=0.6' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.27 Safari/537.36' -H 'Accept: */*' -H 'Cache-Control: no-cache' -H 'Referer: https://helloworldopen.com/race-visualizer/recording=https://hwo2014-racedata-prod.s3.amazonaws.com/test-races/BYAW0P3YPS31LXW035Y7.json&version=1' -H 'Connection: keep-alive' -H 'DNT: 1' --compressed"""%filename
