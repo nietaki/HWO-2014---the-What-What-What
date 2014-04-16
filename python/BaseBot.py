@@ -10,8 +10,10 @@ class BaseBot(object):
     tick = 0
     tick_delta = 1
 
-    total_distance = 0.0
+    current_track_piece = 0
+    in_piece_distance = 0.0
     distance_delta = 0.0
+    lane = 0
 
     speed = 0.0
 
@@ -86,26 +88,30 @@ class BaseBot(object):
         #TODO change this to work with multiple cars, preferably in a separate class, CarStats or sth
         self.slip_angle = data[0]['angle']
         self.piece_position = data[0]['piecePosition']
-
         self.tick_delta = new_tick - self.tick
         self.tick = new_tick
 
+        self.lane = self.piece_position['lane']['endLaneIndex']
+        new_track_piece_index = self.piece_position['pieceIndex']
+        new_in_piece_distance = self.piece_position['inPieceDistance']
         #we don't want division by 0
         if self.tick_delta > 0:
-            new_distance = self.distance(self.piece_position['lap'], self.piece_position['pieceIndex'],
-                                         self.piece_position['inPieceDistance'])
-            self.distance_delta = new_distance - self.total_distance
-            self.total_distance = new_distance
-
+            #FIXME this won't work correctly when switching on bends - the track lengths vary
+            self.distance_delta = self.distance_diff(self.current_track_piece, self.in_piece_distance,
+                                                     new_track_piece_index,
+                                                     new_in_piece_distance, self.lane)
             new_speed = self.distance_delta/self.tick_delta
             self.acceleration = (new_speed - self.speed)/self.tick_delta
             self.speed = new_speed
 
-        print("tick: {0}, tick_delta: {1},distance_delta: {2}, speed: {3}, acceleration: {4}".format(self.tick,
-                                                                                               self.tick_delta,
-                                                                                               self.distance_delta,
-                                                                                               self.speed,
-                                                                                               self.acceleration))
+        self.current_track_piece = new_track_piece_index
+        self.in_piece_distance = new_in_piece_distance
+
+        #print("tick: {0}, tick_delta: {1},distance_delta: {2}, speed: {3}, acceleration: {4}".format(self.tick,
+        #                                                                                       self.tick_delta,
+        #                                                                                       self.distance_delta,
+        #                                                                                       self.speed,
+        #                                                                                       self.acceleration))
         self.on_car_positions(data)
 
     def on_car_positions(self, data):
@@ -144,7 +150,7 @@ class BaseBot(object):
     #        sum(self.piece_lengths()[:piece_index]) + \
     #        piece_offset
 
-    def truePieceLength(self, piece_index, lane):
+    def true_piece_length(self, piece_index, lane):
         current_piece = self.track_pieces[piece_index]
         if 'length' in current_piece:
             #straight
@@ -164,6 +170,11 @@ class BaseBot(object):
                 true_radius += distance_from_center
             return proportion * 2 * 3.14159 * true_radius
 
+    def distance_diff(self, piece_index_1, in_piece_distance_1, piece_index_2, in_piece_distance_2, lane):
+        if piece_index_1 == piece_index_2:
+            return in_piece_distance_2 - in_piece_distance_1
+        else:
+            return self.true_piece_length(piece_index_1, lane) - in_piece_distance_1 + in_piece_distance_2
 
     ## and the LOOP ##
     def msg_loop(self):
