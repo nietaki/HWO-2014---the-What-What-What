@@ -14,8 +14,12 @@ class Track(object):
         self.lanes = self.track['lanes']
 
     def true_radius(self, piece_index, lane):
-        distance_from_center = self.lanes[lane]['distanceFromCenter']
         current_piece = self.track_pieces[piece_index]
+        if 'length' in current_piece:
+            #straight
+            return float('inf')
+
+        distance_from_center = self.lanes[lane]['distanceFromCenter']
         true_radius = current_piece['radius']
         angle = current_piece['angle']
         if angle > 0:

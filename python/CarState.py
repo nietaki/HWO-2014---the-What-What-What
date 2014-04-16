@@ -87,7 +87,7 @@ class CarState(object):
         row["lane_end"] = self.end_lane_index
         row["slip_angle"] = self.slip_angle
         row["piece_index"] = self.track_piece_index
-        row["lane_radius"] = self.track.true_piece_length(self.track_piece_index, self.end_lane_index)
+        row["lane_radius"] = self.track.true_radius(self.track_piece_index, self.end_lane_index)
         row["in_piece_distance"] = self.in_piece_distance
         row["distance_delta"] = self.distance_delta
         row["velocity"] = self.velocity
