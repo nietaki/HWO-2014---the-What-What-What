@@ -90,7 +90,14 @@ class BaseBot(object):
 
         self.on_car_positions(data)
 
+    """ this **always** has to respond to the server, with at least a ping *** """
     def on_car_positions(self, data):
+        # On the test server, C.I and qualifying rounds, the bot must reply to the server on each game tick. The server
+        # advances the game in ticks and waits for a reply from all bots at each tick. If your bot fails to respond
+        # within a certain period the server will send you an error message and disqualify you. If there's nothing your
+        # bot wants to "say", you can send a "ping" message described below. The server also processes only one message
+        # / bot /tick, so there's no point sending more.
+        self.ping()
         print("BaseBot says: Car positions")
 
     def on_crash_base(self, data):
