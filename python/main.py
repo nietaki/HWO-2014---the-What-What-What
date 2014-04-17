@@ -16,5 +16,6 @@ if __name__ == "__main__":
         s.connect((host, int(port)))
         #bot = NoobBot(s, name, key)
         #bot = KeimolaBreaker(s, name, key)
-        bot = KeimolaAccelerator(s, name, key)
+        #bot = KeimolaAccelerator(s, name, key)
+        bot = GradualAccelerator(s, name, key)
         bot.run()
