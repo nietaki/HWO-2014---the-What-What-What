@@ -1,0 +1,124 @@
+\pdfminorversion=5
+
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{longtable}
+\usepackage{bytefield}
+\usepackage{color}
+\usepackage[bookmarksopen=true]{hyperref}
+\usepackage[pdftex]{graphicx}
+%\usepackage{graphvizzz}  % <---- This needs to be included
+\usepackage[utf8x]{inputenc} %utf8 %latin1
+\usepackage{polski}
+\usepackage{rotating}
+\usepackage{listings}
+\lstset{language=python} 
+\usepackage{amsmath}
+\usepackage{footnote}
+\usepackage{xspace}
+
+\title{Fizyka w Hello World Open 2014}
+\author{Jacek Królikowski, Piotr Sokólski}
+\date{\today}
+\hypersetup{%
+pdftitle={},
+pdfauthor={Jacek Królikowski <jacek.krolikowski@almost-done.net>, Piotr Sokólski <p@pyetras.com>},
+pdfsubject={},
+pdfkeywords={}}
+
+% Set up hyperlink colors
+\definecolor{darkred}{rgb}{0.5,0,0}
+\definecolor{darkgreen}{rgb}{0,0.3,0}
+\definecolor{darkblue}{rgb}{0,0,0.5}
+\definecolor{darkbrown}{rgb}{0.28,0.07,0.07}
+\hypersetup{%
+  colorlinks=true,
+  citecolor=darkblue,
+  urlcolor=darkgreen,
+  linkcolor=darkred,
+  menucolor=darkbrown}
+
+\newcommand{\atm}{\emph{ATM}\xspace}
+
+\makeatletter
+\def\imod#1{\allowbreak\mkern10mu({\operator@font mod}\,\,#1)}
+\makeatother
+
+\begin{document}
+\sloppy
+\maketitle
+\section{oznaczenia}
+Jako, że będziemy używali w kodzie oznaczeń angielskich, a większość literek wywodzi się od angielskich słów, oznaczenia w obu językach:
+
+\subsubsection{podstawowe}
+$t$ - time - czas, wyrażony w intowych tickach \\
+$s$ - distance - droga, wyrażona we flatach \\
+$V$ - velocity - prędkość \\
+$a$ - engine acceleration - przyspieszenie odsilnikowe \\
+$e$ - engine power / maximal acceleration - ``moc'' silnika, maksymalne przyspieszenie jakie silnik może nadać samochodowi - w naszej pierwszej planszy ma wartość $0.2$  \\
+$g$ - throtle - gaz \\
+$b$ - drag deceleration - opór \\
+$d$ - drag coefficient - współczynnik oporu - w naszej pierwszej planszy ma wartość $0.02$ \\
+$c$ - net acceleration - przyspieszenie wypadkowe
+\subsubsection{zaawansowane}
+Te tutaj mogą się jeszcze zmienić, bo jeszcze nie wiemy, co rządzi kątem, zakrętami itd.\\
+$\alpha$ - slip angle - kąt driftu\\
+$r$ - bend radius - promień (faktyczny - z uwzględnieniem pasa itd) zakrętu\\
+$m$ - mass - masa samochodu \\
+$F_d$ - siła dośrodkowa \\
+$F_t$ - maksymalna siła przyczepności opon \\
+\section{wzory}
+\subsection{jazda po prostej}
+Wszystkie poniże wzory są chwilowe, należy je liczyć raczej na przestrzeni jednego ticku.
+
+$V = \frac{ds}{dt}$ - prędkość chwilowa
+
+$c = \frac{dV}{dt}$ - przyspieszenie wypadkowe
+
+$c = a - b$ - wypadkowe przyspieszenie zależy od przyspieszenia odsilnikowego i od oporów
+
+$a = e * g$ - przy czym $e$ nie jest znane, trzeba je wyliczyć
+
+$b = V * d$ - opór jest wprost proporcjonalny do prędkości
+
+Więc $c = e*g - V*d$. 
+
+Dobrym podejściem do szybkiego tego mierzenia $d$ i $e$ jest wciśnięcie gazu do dechy na starcie i w pewnym momencie zdjęcie gazu na jeden tick. W czasie zdjęcia gazu na ten jeden tick możemy obliczyć $d$, a potem odwołując się do wcześniejszych wartości można policzyć $e$ już uwzględniając jakie były w jakimś tam momencie opory. Być może liczenie tego z pierwszego ticku przyspieszającego też będzie działało - trzeba sprawdzić (na przykład w tym excelu, którego mam pod windą).
+
+Wzór na prędkość w chwili $x+1$: $$V_{x+1} = V_{x} + (e * g - V_x * d)$$
+
+Wyprowadzenie wzoru na położenie gazu potrzebne do utrzymania prędkości $V_0$: 
+
+$c=0$
+
+$a=b$
+
+$e * g = V_0 * d$
+
+$g = \frac{V_0d}{e}$
+
+\subsubsection{Wzory do określenia}
+Przez to, że opór zmienia się w zależności od prędkości, nie mamy prostych wzorów na większość rzeczy - trzeba je będzie wyprowadzić (zakładając, że znamy $d$ i $e$). Pewnie wszystkie z tych wzorów będą zwarte, może będą zawierały jakieś całki.
+
+\begin{itemize}
+ \item zakładając stały poziom przepustnicy i mając daną prędkość początkową, funkcja drogi od czasu - do prognozowania położeń samochodów, przyspieszających czy zwalniających, i tak.
+ \item zakładając stały poziom przepustnicy i mając daną prędkość początkową, funkcja prędkości od drogi. Do tego, żeby wiedzieć, kiedy zdejmować gaz przed zakrętem chociażby.
+ \item pewnie jeszcze jakieś inne, ale na razie tylko te dwie powyżej wydają mi się potrzebne
+\end{itemize}
+
+\subsection{jazda po łuku}
+Tu trzeba będzie poeksperymentować. 
+
+Jest wzór na siłę dośrodkową - siłę skierowaną środka łuku potrzebną, żeby coś zasuwało z jakąś prędkością po zadanym łuku. 
+
+$F_d = \frac{mV^2}{r}$
+
+Zakładając, że przyczepność kół jest stała, można się domyślać, że samochód będzie miał pewną maksymalną siłę przyczepności (?) jaką mogą zapewnić opony, powyżej której, będzie driftował - $F_t$. Kiedy wyliczone $F_d > F_t$ - będzie zaczynał driftować. Niekoniecznie, bo być może część przyczepności będzie (jak w rzeczywistości) ``pochłaniało'' napędzanie samochodu $F_n = a * m$ i trzeba policzyć wypadkową z prostopadłych $F_d$ i $F_n$, która będzie przekraczała $F_t$ kiedy przyczepność będzie zrywana. To wszystko domysły, zobaczymy.
+
+Bardzo możliwe też, że np zdjęcie gazu do zera zawsze pozwala wyjść z driftu.
+
+Podobnie jestem przekonany, że położenie \textit{guide flag} też ma kluczowe znaczenie - im bardziej centralne położenie pod samochodem, tym jest stabilniejszy w zakrętach - zobaczymy.
+
+Generalnie wydaje mi się, że w tym momencie trzeba zrobić eksperymenty, przy jakich prędkościach samochód zaczyna driftować w zależności od promienia zakrętu, ale najlepiej przy minimalnym przyspieszeniu, żeby wyeliminować wpływ przyspieszenia na wzór... :S
+
+\end{document}
