@@ -1,5 +1,6 @@
 import json
 import csv
+from datetime import *
 import os
 import socket
 import sys
@@ -16,14 +17,14 @@ class BaseBot(object):
     """the Track object"""
     track = None
 
-    csv_filename = "test3.csv"
-
     lines = []
 
     def __init__(self, sock, name, key):
         self.sock = sock
         self.name = name
         self.key = key
+        date_string = datetime.now().strftime("%y%m%d_%H%M")
+        self.csv_filename = "" + name + "_" + date_string + ".csv"
 
 
     ## message handlers and senders ##
@@ -128,6 +129,7 @@ class BaseBot(object):
     ## other helpers/accessors ##
 
     def my_car(self):
+        """:rtype: CarState"""
         return self.cars[self.car_color]
 
     ## and the LOOP ##
