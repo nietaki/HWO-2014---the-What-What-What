@@ -1,6 +1,6 @@
 import json
 import csv
-import pickle
+import os
 import socket
 import sys
 from Track import Track
@@ -63,9 +63,6 @@ class BaseBot(object):
     def on_game_init_base(self, data):
         race = data['race']
         self.track = Track(race['track'], race['raceSession'])
-
-        with open('debug_output/{0}_track.pickle'.format(self.track.track_id), 'wb') as handle:
-            pickle.dump(race['track'], handle)
 
         for car in race['cars']:
             car_object = CarState(self.track, car)
@@ -143,6 +140,16 @@ class BaseBot(object):
         while line:
             msg = json.loads(line)
             msg_type, data = msg['msgType'], msg['data']
+
+            if msg_type == 'gameInit':
+                track_name = data['race']['track']['id']
+
+                #let me dump me some track, but just once
+                filename = 'tracks/{0}.json'.format(track_name)
+                if not os.path.exists(filename):
+                    with open('tracks/' + track_name + '.json', 'w') as handle:
+                        handle.write(line)
+
             if msg_type == 'carPositions':
                 msg_map[msg_type](data, msg.get('gameTick', 0))
             elif msg_type in msg_map:
