@@ -7,19 +7,20 @@ import sys
 from Track import Track
 from CarState import CarState
 
+
 class BaseBot(object):
-    car_name = None
-    car_color = None
-
-    """a dictionary of car color -> CarState objects"""
-    cars = dict()
-
-    """the Track object"""
-    track = None
-
-    lines = []
-
     def __init__(self, sock, name, key):
+        self.car_name = None
+        self.car_color = None
+
+        """a dictionary of car color -> CarState objects"""
+        self.cars = dict()
+
+        """the Track object"""
+        self.track = None
+
+        self.lines = []
+
         self.sock = sock
         self.name = name
         self.key = key

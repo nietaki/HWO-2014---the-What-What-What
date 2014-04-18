@@ -35,3 +35,21 @@ class GradualAccelerator(BaseBot):
         if self.cur_throttle > 1.0:
             self.cur_throttle = 1.0
         self.throttle(self.cur_throttle)
+
+
+class ConstThrottle(BaseBot):
+    const_throttle = 0.5
+
+    def on_car_positions(self, data):
+        self.throttle(self.const_throttle)
+
+
+class ConstVelocity(BaseBot):
+    """for now this only works on Keimola - the physics are hardcoded"""
+    target_velocity = 5.0
+
+    def on_car_positions(self, data):
+        if self.my_car().velocity < self.target_velocity:
+            self.throttle(1.0)
+        else:
+            self.throttle(1.0 * self.target_velocity / 10)
