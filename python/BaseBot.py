@@ -39,6 +39,12 @@ class BaseBot(object):
         return self.msg("join", {"name": self.name,
                                  "key": self.key})
 
+    def join_track(self, track_name):
+        bot_id = {"name": self.name, "key": self.key}
+        return self.msg('joinRace', {"botId": bot_id,
+                                     'trackName': track_name,
+                                     'carCount': 1})
+
     def throttle(self, throttle):
         self.cars[self.car_color].set_throttle(throttle)
         self.msg("throttle", throttle)
@@ -52,8 +58,15 @@ class BaseBot(object):
     def ping(self):
         self.msg("ping", {})
 
-    def run(self):
-        self.join()
+    #def run(self):
+    #    self.join()
+    #    self.msg_loop()
+
+    def run(self, track_name = None):
+        if not track_name:
+            self.join()
+        else:
+            self.join_track(track_name)
         self.msg_loop()
 
     def on_join_base(self, data, tick):

@@ -21,13 +21,16 @@ if __name__ == "__main__":
         #bot = SwitchAndConstVelocity(s, name, key)
         #bot.run()
 
-        gen = (x * 0.1 for x in range(75, 80, 1))
-        for speed in gen:
-            print(speed)
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((host, int(port)))
-            #bot = ConstThrottle(s, "" + name + str(throttle), key)
-            #bot.const_throttle = throttle
-            bot = SwitchAndConstVelocity(s, "" + name + str(speed), key)
-            bot.target_velocity = speed
-            bot.run()
+        bot = ConstVelocity(s, name, key)
+        bot.target_velocity = 5.5
+        bot.run("germany")
+        #gen = (x * 0.1 for x in range(75, 80, 1))
+        #for speed in gen:
+        #    print(speed)
+        #    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #    s.connect((host, int(port)))
+        #    #bot = ConstThrottle(s, "" + name + str(throttle), key)
+        #    #bot.const_throttle = throttle
+        #    bot = SwitchAndConstVelocity(s, "" + name + str(speed), key)
+        #    bot.target_velocity = speed
+        #    bot.run()
