@@ -21,7 +21,7 @@ if __name__ == "__main__":
         #bot = SwitchAndConstVelocity(s, name, key)
         #bot.run()
 
-        gen = (x * 0.1 for x in range(55, 70, 1))
+        gen = (x * 0.1 for x in range(75, 80, 1))
         for speed in gen:
             print(speed)
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
