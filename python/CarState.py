@@ -3,10 +3,10 @@ __author__ = 'nietaki'
 import csv
 
 
-"""stores all the state of a car (position, velocity and others), ours or theirs. Most of the info comes from the server
-messages, the throttle comes from the bot"""
-class CarState(object):
 
+class CarState(object):
+    """stores all the state of a car (position, velocity and others), ours or theirs. Most of the info comes from the server
+    messages, the throttle comes from the bot"""
 
     def __init__(self, track_object, game_init_car_fragment):
         self.name = game_init_car_fragment['id']['name']

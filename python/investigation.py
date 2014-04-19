@@ -4,7 +4,7 @@ from BaseBot import BaseBot
 
 
 class KeimolaBreaker(BaseBot):
-    def on_car_positions(self, data):
+    def on_car_positions(self, data, tick):
         if self.my_car().velocity < 0.0001:
             self.throttle(0.5)
         elif self.my_car().track_piece_index == 36:
@@ -16,7 +16,7 @@ class KeimolaBreaker(BaseBot):
 
 
 class KeimolaAccelerator(BaseBot):
-    def on_car_positions(self, data):
+    def on_car_positions(self, data, tick):
         if self.my_car().velocity < 0.1:
             self.throttle(0.1)
         elif self.my_car().track_piece_index == 36:
@@ -30,7 +30,7 @@ class GradualAccelerator(BaseBot):
     target_ticks = 2000
     diff = 1.0/target_ticks
 
-    def on_car_positions(self, data):
+    def on_car_positions(self, data, tick):
         self.cur_throttle += self.diff
         if self.cur_throttle > 1.0:
             self.cur_throttle = 1.0
@@ -40,7 +40,7 @@ class GradualAccelerator(BaseBot):
 class ConstThrottle(BaseBot):
     const_throttle = 0.5
 
-    def on_car_positions(self, data):
+    def on_car_positions(self, data, tick):
         self.throttle(self.const_throttle)
 
 
@@ -48,7 +48,7 @@ class ConstVelocity(BaseBot):
     """for now this only works on Keimola - the physics are hardcoded"""
     target_velocity = 5.0
 
-    def on_car_positions(self, data):
+    def on_car_positions(self, data, tick):
         if self.my_car().velocity < self.target_velocity:
             self.throttle(1.0)
         else:
