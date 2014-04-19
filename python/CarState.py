@@ -40,6 +40,14 @@ class CarState(object):
         self.piece_position = None
         self.slip_angle = 0.0
 
+        self.crashed = False
+
+    def crash(self):
+        self.crashed = True
+
+    def spawn(self):
+        self.crashed = False
+
     def set_throttle(self, throttle):
         self.throttle = throttle
 
@@ -92,7 +100,7 @@ class CarState(object):
         row["distance_delta"] = self.distance_delta
         row["velocity"] = self.velocity
         row["acceleration"] = self.acceleration
-        row["is_crashed"] = "FIXME"
+        row["is_crashed"] = int(self.crashed)
         return row
 
     def csv_keys(self):

@@ -103,10 +103,28 @@ class BaseBot(object):
         print("BaseBot says: Car positions")
 
     def on_crash_base(self, data):
+        #FIXME this could be augmented with the game tick to make sure it is precise
+        self.cars[data['color']].crash()
         self.on_crash(data)
 
     def on_crash(self, data):
         print("BaseBot says: Someone crashed")
+
+    def on_spawn_base(self, data):
+        self.cars[data['color']].spawn()
+        self.on_spawn(data)
+
+    def on_spawn(self, data):
+        print("BaseBot says: Someone spawned")
+
+    def on_dnf_base(self, data):
+        self.on_dnf(data)
+
+    def on_dnf(self, data):
+        color = data['car']['color']
+        name = data['car']['name']
+        reason = data['reason']
+        print("BaseBot says {0}, wearing {1} DNF: {2}".format(name, color, reason))
 
     def on_game_end_base(self, data):
         with open('debug_output/' + self.csv_filename, 'wb') as f:
@@ -142,6 +160,8 @@ class BaseBot(object):
             'gameStart': self.on_game_start_base,
             'carPositions': self.on_car_positions_base,
             'crash': self.on_crash_base,
+            'spawn': self.on_spawn_base,
+            'dnf': self.on_dnf_base,
             'gameEnd': self.on_game_end_base,
             'error': self.on_error_base,
         }
