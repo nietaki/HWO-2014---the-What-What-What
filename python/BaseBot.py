@@ -40,10 +40,14 @@ class BaseBot(object):
                                  "key": self.key})
 
     def throttle(self, throttle):
-
         self.cars[self.car_color].set_throttle(throttle)
-
         self.msg("throttle", throttle)
+
+    def switch_lane(self, direction_string):
+        self.msg('switchLane', direction_string)
+        print('sent switchLane')
+
+    #TODO self.switch_lane({-1, 1})
 
     def ping(self):
         self.msg("ping", {})

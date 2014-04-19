@@ -91,6 +91,7 @@ class CarState(object):
         row["car_id"] = self.name
         row["map_id"] = self.track.track_id
         row["throttle"] = self.throttle
+        row["can_switch"] = int(self.track.track_pieces[self.track_piece_index].get('switch', False))
         row["lane_start"] = self.start_lane_index
         row["lane_end"] = self.end_lane_index
         row["slip_angle"] = self.slip_angle
@@ -113,6 +114,7 @@ class CarState(object):
                 "acceleration",
                 "lane_radius",
                 "slip_angle",
+                "can_switch",
                 "lane_start",
                 "lane_end",
                 "piece_index",

@@ -53,3 +53,24 @@ class ConstVelocity(BaseBot):
             self.throttle(1.0)
         else:
             self.throttle(1.0 * self.target_velocity / 10)
+
+
+
+
+class SwitchAndConstVelocity(BaseBot):
+    """for now this only works on Keimola - the physics and switching are hardcoded"""
+    def __init__(self, sock, name, key):
+        #it sucks so bad we cannot really declare member variables outside of the constructor
+        super(SwitchAndConstVelocity, self).__init__(sock, name, key)
+        self.target_velocity = 5.0
+        self.already_switched = False
+
+
+    def on_car_positions(self, data, tick):
+        if not self.already_switched and tick > 0:
+            self.already_switched = True
+            self.switch_lane('Right')
+        elif self.my_car().velocity < self.target_velocity:
+            self.throttle(1.0)
+        else:
+            self.throttle(1.0 * self.target_velocity / 10)
