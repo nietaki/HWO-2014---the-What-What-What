@@ -25,7 +25,7 @@ if __name__ == "__main__":
         #bot.target_velocity = 5.0
         #bot.velocity_increase = 0.25
         #bot.run("germany")
-        gen = (x * 0.1 for x in range(45, 78, 3))
+        gen = (x * 0.1 for x in range(36, 45, 3))
         for speed in gen:
             print(speed)
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
