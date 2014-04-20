@@ -16,6 +16,7 @@
 \usepackage{amsmath}
 \usepackage{footnote}
 \usepackage{xspace}
+\usepackage{textcomp}
 
 \title{Fizyka w Hello World Open 2014}
 \author{Jacek Królikowski, Piotr Sokólski}
@@ -107,15 +108,20 @@ Przez to, że opór zmienia się w zależności od prędkości, nie mamy prostyc
 \end{itemize}
 
 \subsection{jazda po łuku}
-Tu trzeba będzie poeksperymentować. 
+
+Kąt, przy jakim wypadamy z trasy, jest stały, niezależny od prędkości i promienia skrętu, chociaż pewnie jest jedną ze stałych fizycznych. W naszym przypadku z zakrętu wypada się po przekroczeniu/osiągnięciu kąta 60\textdegree.
+
+Najogólniej, wzór na ``stabilny'' kąt dla jednego promienia skrętu w zależności od prędkości jest $\alpha = A * V + B$, jeśli $\alpha>0$, $0$ wpp, gdzie $A$ i $B$ to pewne współczynniki. Ustalenie tych współczynników w zaleśności od kąta właśnie trwa, ale wydaje mi się, że $B$ jest stałe, tylko $A$ się zmienia.
+
+Ciekawa sprawa - zmiana slip angle też ma pewną ``inercję'' - nawet jeśli kąt stabilny to na przykład 45\textdegree, to jeśli kąt w szybkim zakręcie przybiera od zera, to 45\textdegree nie będzie ``nieprzekraczalną'' asymptotą, tylko kąt przekroczy to 45\textdegree, potem się wachnie i wróci do tych 45\textdegree. Trudno mi to na szyko zdefiniować, ale dobrze to widać na wykresie, który dodam później.
+
+\subsubsection{inne przemyślenia nie mające związku z rzeczywistością}
 
 Jest wzór na siłę dośrodkową - siłę skierowaną środka łuku potrzebną, żeby coś zasuwało z jakąś prędkością po zadanym łuku. 
 
 $F_d = \frac{mV^2}{r}$
 
 Zakładając, że przyczepność kół jest stała, można się domyślać, że samochód będzie miał pewną maksymalną siłę przyczepności (?) jaką mogą zapewnić opony, powyżej której, będzie driftował - $F_t$. Kiedy wyliczone $F_d > F_t$ - będzie zaczynał driftować. Niekoniecznie, bo być może część przyczepności będzie (jak w rzeczywistości) ``pochłaniało'' napędzanie samochodu $F_n = a * m$ i trzeba policzyć wypadkową z prostopadłych $F_d$ i $F_n$, która będzie przekraczała $F_t$ kiedy przyczepność będzie zrywana. To wszystko domysły, zobaczymy.
-
-Bardzo możliwe też, że np zdjęcie gazu do zera zawsze pozwala wyjść z driftu.
 
 Podobnie jestem przekonany, że położenie \textit{guide flag} też ma kluczowe znaczenie - im bardziej centralne położenie pod samochodem, tym jest stabilniejszy w zakrętach - zobaczymy.
 

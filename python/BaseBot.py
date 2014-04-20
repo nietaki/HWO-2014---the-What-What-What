@@ -164,6 +164,9 @@ class BaseBot(object):
     def on_error(self, data, tick):
         print("BaseBot says: Error: {0}".format(data))
 
+    def on_lap_finished(self, data, tick):
+        print('BaseBot says: lap finished')
+
     ## other helpers/accessors ##
     def my_car(self):
         """:rtype: CarState"""
@@ -177,6 +180,7 @@ class BaseBot(object):
             'gameInit': self.on_game_init_base,
             'gameStart': self.on_game_start_base,
             'carPositions': self.on_car_positions_base,
+            'lapFinished': self.on_lap_finished,
             'crash': self.on_crash_base,
             'spawn': self.on_spawn_base,
             'dnf': self.on_dnf_base,
