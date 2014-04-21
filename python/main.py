@@ -18,22 +18,22 @@ if __name__ == "__main__":
         #bot = KeimolaBreaker(s, name, key)
         #bot = KeimolaAccelerator(s, name, key)
         #bot = GradualAccelerator(s, name, key)
-        #bot = SwitchAndConstVelocity(s, name, key)
-        #bot.run()
+        bot = SwitchAndConstVelocity(s, name, key)
+        bot.run()
 
         #bot = ConstVelocity(s, name, key)
         #bot.target_velocity = 5.0
         #bot.velocity_increase = 0.25
         #bot.run("germany")
-        gen = (x * 0.1 for x in range(36, 45, 3))
-        for speed in gen:
-            print(speed)
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((host, int(port)))
-            #bot = ConstThrottle(s, "" + name + str(throttle), key)
-            #bot.const_throttle = throttle
-            bot = SwitchAndConstVelocity(s, "" + name + str(speed), key)
-            bot.target_velocity = speed
-            bot.velocity_increase = 0.1
-            bot.run("germany")
+        #gen = (x * 0.1 for x in range(36, 45, 3))
+        #for speed in gen:
+        #    print(speed)
+        #    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #    s.connect((host, int(port)))
+        #    #bot = ConstThrottle(s, "" + name + str(throttle), key)
+        #    #bot.const_throttle = throttle
+        #    bot = SwitchAndConstVelocity(s, "" + name + str(speed), key)
+        #    bot.target_velocity = speed
+        #    bot.velocity_increase = 0.1
+        #    bot.run("germany")
 

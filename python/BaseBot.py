@@ -33,7 +33,7 @@ class BaseBot(object):
         self.send(json.dumps({"msgType": msg_type, "data": data}))
 
     def send(self, msg):
-        self.sock.send(msg + "\n")
+        self.sock.sendall(msg + "\n")
 
     def join(self):
         return self.msg("join", {"name": self.name,
