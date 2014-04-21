@@ -94,6 +94,7 @@ class CarState(object):
         row["can_switch"] = int(self.track.track_pieces[self.track_piece_index].get('switch', False))
         row["lane_start"] = self.start_lane_index
         row["lane_end"] = self.end_lane_index
+        row["bend_direction"] = self.track.bend_direction(self.track_piece_index)
         row["slip_angle"] = self.slip_angle
         row["piece_index"] = self.track_piece_index
         row["lane_radius"] = self.track.true_radius(self.track_piece_index, self.end_lane_index)
@@ -117,6 +118,7 @@ class CarState(object):
                 "can_switch",
                 "lane_start",
                 "lane_end",
+                "bend_direction",
                 "piece_index",
                 "in_piece_distance",
                 "is_crashed"]

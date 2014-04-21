@@ -21,6 +21,21 @@ class Track(object):
             return float('inf')
         return current_piece['radius']
 
+    def piece_straight(self, piece_index):
+        return 'length' in self.track_pieces[piece_index]
+
+    def bend_direction(self, piece_index):
+        """
+        :returns 0 for straight, -1 for left, +1 for right
+        """
+        current_piece = self.track_pieces[piece_index]
+        if self.piece_straight(piece_index):
+            return 0
+        if current_piece['angle'] > 0:
+            return 1
+        else:
+            return -1
+
     def true_radius(self, piece_index, lane):
         current_piece = self.track_pieces[piece_index]
 
@@ -69,7 +84,7 @@ class Track(object):
                 return None
             index = (index + 1) % self.track_piece_count
 
-    def distance_until_index(self, starting_index, in_piece_position, target_index):
+    def distance_until_index(self, starting_index, in_piece_position, target_index, lane=0):
         if target_index is None:
             return None
 
@@ -79,11 +94,10 @@ class Track(object):
         if starting_index == target_index:
             return 0.0
 
-        dist = self.true_piece_length(starting_index, 0) - in_piece_position
+        dist = self.true_piece_length(starting_index, lane) - in_piece_position
 
         index = (starting_index + 1) % self.track_piece_count
         while index != target_index:
-            #FIXME we're faking the lane here
-            dist += self.true_piece_length(index, 0)
+            dist += self.true_piece_length(index, lane)
             index = (index + 1) % self.track_piece_count
         return dist

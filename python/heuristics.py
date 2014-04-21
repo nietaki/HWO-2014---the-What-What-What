@@ -29,7 +29,7 @@ class PhysicsTester(BaseBot):
             self.throttle(0.1)
             return
         next_turn_id = self.track.next_bend_id(piece_index, min(radius, 150))
-        distance_until_sharp_turn = self.track.distance_until_index(piece_index, self.my_car().in_piece_distance, next_turn_id)
+        distance_until_sharp_turn = self.track.distance_until_index(piece_index, self.my_car().in_piece_distance, next_turn_id, lane)
         if not distance_until_sharp_turn is None:
             target_velocity = self.radius_speed_dict[self.track.true_radius(next_turn_id, lane)]
             minimal_distance_to_break = physics.distance_to_break(self.my_car().velocity, target_velocity)
