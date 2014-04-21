@@ -26,7 +26,10 @@ class Track(object):
 
         distance_from_center = self.lanes[lane]['distanceFromCenter']
         true_radius = self.radius(piece_index)
-        angle = self.radius(piece_index)
+        if true_radius == float('inf'):
+            return true_radius #FIXME this is ugly
+
+        angle = current_piece['angle']
         if angle > 0:
             #right hand turn
             true_radius -= distance_from_center
@@ -52,30 +55,35 @@ class Track(object):
         else:
             return self.true_piece_length(piece_index_1, lane) - in_piece_distance_1 + in_piece_distance_2
 
-    def next_bend_id(self, starting_index, maximal_radius=10000.0):
-        index = starting_index % self.track_piece_count
+    #starting_index doesn't get taken into account
+    def next_bend_id(self, starting_index, less_than_radius=float('inf')):
+        starting_index %= self.track_piece_count
+        index = (starting_index + 1) % self.track_piece_count
         while True:
-            radius = self.track_pieces[index].get('radius', float('inf'))
+            radius = self.radius(index)
 
-            if radius <= maximal_radius:
-                return(index)
+            if radius < less_than_radius:
+                return index
 
             if index == starting_index:
                 return None
             index = (index + 1) % self.track_piece_count
 
     def distance_until_index(self, starting_index, in_piece_position, target_index):
+        if target_index is None:
+            return None
+
         starting_index %= self.track_piece_count
         target_index %= self.track_piece_count
 
         if starting_index == target_index:
             return 0.0
 
-        dist = self.true_piece_length(starting_index - in_piece_position)
+        dist = self.true_piece_length(starting_index, 0) - in_piece_position
 
         index = (starting_index + 1) % self.track_piece_count
         while index != target_index:
             #FIXME we're faking the lane here
             dist += self.true_piece_length(index, 0)
-            index = (starting_index + 1) % self.track_piece_count
+            index = (index + 1) % self.track_piece_count
         return dist

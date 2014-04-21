@@ -63,11 +63,15 @@ class BaseBot(object):
     #    self.msg_loop()
 
     def run(self, track_name = None):
-        if not track_name:
-            self.join()
-        else:
-            self.join_track(track_name)
-        self.msg_loop()
+        try:
+            if not track_name:
+                self.join()
+            else:
+                self.join_track(track_name)
+            self.msg_loop()
+        except(KeyboardInterrupt, SystemExit):
+            self.save_csv()
+            raise
 
     def on_join_base(self, data, tick):
         self.join(data, tick)
@@ -145,7 +149,7 @@ class BaseBot(object):
         reason = data['reason']
         print("BaseBot says {0}, wearing {1} DNF: {2}".format(name, color, reason))
 
-    def on_game_end_base(self, data, tick):
+    def save_csv(self):
         with open('debug_output/' + self.csv_filename, 'wb') as f:
             writer = csv.DictWriter(f, self.my_car().csv_keys())
             writer.writeheader()
@@ -153,6 +157,8 @@ class BaseBot(object):
 
         print("closing csv")
 
+    def on_game_end_base(self, data, tick):
+        self.save_csv()
         self.on_game_end(data, tick)
 
     def on_game_end(self, data, tick):

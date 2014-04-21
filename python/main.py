@@ -3,7 +3,7 @@ import socket
 import sys
 from NoobBot import NoobBot
 from investigation import *
-
+from heuristics import *
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
@@ -18,8 +18,8 @@ if __name__ == "__main__":
         #bot = KeimolaBreaker(s, name, key)
         #bot = KeimolaAccelerator(s, name, key)
         #bot = GradualAccelerator(s, name, key)
-        bot = SwitchAndConstVelocity(s, name, key)
-        bot.run()
+        #bot = SwitchAndConstVelocity(s, name, key)
+        #bot.run()
 
         #bot = ConstVelocity(s, name, key)
         #bot.target_velocity = 5.0
@@ -36,4 +36,7 @@ if __name__ == "__main__":
         #    bot.target_velocity = speed
         #    bot.velocity_increase = 0.1
         #    bot.run("germany")
+
+        bot = PhysicsTester(s, name, key)
+        bot.run("germany")
 

@@ -1,5 +1,3 @@
-from python.BaseBot import BaseBot
-
 __author__ = 'nietaki'
 
 # initializing with default values
