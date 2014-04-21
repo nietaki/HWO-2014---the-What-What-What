@@ -38,5 +38,6 @@ if __name__ == "__main__":
         #    bot.run("germany")
 
         bot = PhysicsTester(s, name, key)
-        bot.run("germany")
+        #bot.run("germany")
+        bot.run()
 

@@ -11,7 +11,8 @@ class PhysicsTester(BaseBot):
     def __init__(self, sock, name, key):
         super(PhysicsTester, self).__init__(sock, name, key)
         #self.radius_speed_dict = {40: 4.8, 60: 5.5, 90: 6.6, 110: 7.3}
-        self.radius_speed_dict = {40: 4.7, 60: 5.3, 90: 6.5, 110: 7.2}
+        self.radius_speed_dict = {40: 4.7, 60: 5.4, 90: 6.5, 110: 7.2}
+        #self.radius_speed_dict = {40: 4.5, 60: 5.1, 90: 6.3, 110: 7.0}
 
     def on_car_positions(self, data, tick):
         piece_index = self.my_car().track_piece_index
@@ -24,16 +25,16 @@ class PhysicsTester(BaseBot):
              jak tak, to utrzymujemy prędkość adekwatną do zakrętu
              jak nie, to pełen gaz
         """
-        if self.my_car().slip_angle > 50:
+        if self.my_car().relative_angle > 50 and self.my_car().relative_angle_velocity > 1.0:
             print("That's too dangerous, brother!")
-            self.throttle(0.1)
+            self.throttle(0.3)
             return
         next_turn_id = self.track.next_bend_id(piece_index, min(radius, 150))
         distance_until_sharp_turn = self.track.distance_until_index(piece_index, self.my_car().in_piece_distance, next_turn_id, lane)
         if not distance_until_sharp_turn is None:
             target_velocity = self.radius_speed_dict[self.track.true_radius(next_turn_id, lane)]
             minimal_distance_to_break = physics.distance_to_break(self.my_car().velocity, target_velocity)
-            if minimal_distance_to_break >= distance_until_sharp_turn:
+            if minimal_distance_to_break >= distance_until_sharp_turn and (self.my_car().velocity - target_velocity) > 0.1:
                 self.throttle(0.0)
                 print("gotta slow down to {0}!".format(target_velocity))
                 return

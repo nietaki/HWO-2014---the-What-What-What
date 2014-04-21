@@ -40,6 +40,11 @@ class CarState(object):
         self.piece_position = None
         self.slip_angle = 0.0
 
+        """ relative meaning it always goes >0 on bends """
+        self.relative_angle = 0.0
+        self.relative_angle_velocity = 0.0
+        self.relative_angle_acceleration= 0.0
+
         self.crashed = False
 
     def crash(self):
@@ -55,9 +60,17 @@ class CarState(object):
         return self.end_lane_index
 
     def on_car_position(self, car_data, new_tick):
-        self.slip_angle = car_data['angle']
+        #FIXME this is a mess
+        new_slip_angle = car_data['angle']
+        new_relative_angle_velocity = new_slip_angle - self.slip_angle
+        if new_slip_angle < 0:
+            new_relative_angle_velocity *= -1.0
+
+        self.relative_angle_acceleration = new_relative_angle_velocity - self.relative_angle_velocity
+        self.relative_angle_velocity = new_relative_angle_velocity
+
+        self.slip_angle = new_slip_angle
         self.piece_position = car_data['piecePosition']
-        self.tick_delta = new_tick - self.tick
         self.tick = new_tick
 
         self.start_lane_index = self.piece_position['lane']['startLaneIndex']
@@ -65,18 +78,22 @@ class CarState(object):
 
         new_track_piece_index = self.piece_position['pieceIndex']
         new_in_piece_distance = self.piece_position['inPieceDistance']
-        #we don't want division by 0
-        if self.tick_delta > 0:
-            #FIXME this won't work correctly when switching on bends - the track lengths vary
-            self.distance_delta = self.track.distance_diff(self.track_piece_index, self.in_piece_distance,
-                                                           new_track_piece_index,
-                                                           new_in_piece_distance, self.lane())
-            new_velocity = self.distance_delta / self.tick_delta
-            self.acceleration = (new_velocity - self.velocity) / self.tick_delta
-            self.velocity = new_velocity
+
+        #FIXME this won't work correctly when switching on bends - the track lengths vary
+        self.distance_delta = self.track.distance_diff(self.track_piece_index, self.in_piece_distance,
+                                                       new_track_piece_index,
+                                                       new_in_piece_distance, self.lane())
+        new_velocity = self.distance_delta
+        self.acceleration = (new_velocity - self.velocity)
+        self.velocity = new_velocity
 
         self.track_piece_index = new_track_piece_index
         self.in_piece_distance = new_in_piece_distance
+
+        self.relative_angle = self.track.bend_direction(self.track_piece_index) * self.slip_angle
+
+
+
 
         #print("tick: {0}, tick_delta: {1},distance_delta: {2}, velocity: {3}, acceleration: {4}".
         #      format(self.tick,
@@ -96,6 +113,9 @@ class CarState(object):
         row["lane_end"] = self.end_lane_index
         row["bend_direction"] = self.track.bend_direction(self.track_piece_index)
         row["slip_angle"] = self.slip_angle
+        row["relative_angle"] = self.relative_angle
+        row["rsaV"] = self.relative_angle_velocity
+        row["rsaa"] = self.relative_angle_acceleration
         row["piece_index"] = self.track_piece_index
         row["lane_radius"] = self.track.true_radius(self.track_piece_index, self.end_lane_index)
         row["in_piece_distance"] = self.in_piece_distance
@@ -115,6 +135,9 @@ class CarState(object):
                 "acceleration",
                 "lane_radius",
                 "slip_angle",
+                "relative_angle",
+                "rsaV",
+                "rsaa",
                 "can_switch",
                 "lane_start",
                 "lane_end",
