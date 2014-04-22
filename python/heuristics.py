@@ -25,7 +25,8 @@ class PhysicsTester(BaseBot):
              jak tak, to utrzymujemy prędkość adekwatną do zakrętu
              jak nie, to pełen gaz
         """
-        if self.my_car().relative_angle > 50 and self.my_car().relative_angle_velocity > 1.0:
+        if (self.my_car().slip_angle > 50 and self.my_car().angle_velocity > 1.0) or \
+           (self.my_car().slip_angle < -50 and self.my_car().angle_velocity < -1.0):
             print("That's too dangerous, brother!")
             self.throttle(0.3)
             return
