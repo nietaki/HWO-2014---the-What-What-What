@@ -38,9 +38,15 @@ if __name__ == "__main__":
         #    bot.run("germany")
 
         #bot = PhysicsTester(s, name, key)
-        bot = ConstVelocity(s, name, key)
-        bot.target_velocity = 5.9
-        bot.velocity_increase = 0.3
-        #bot.run("germany")
-        bot.run()
+        #bot = ConstVelocity(s, name, key)
+        #bot.target_velocity = 5.9
+        #bot.velocity_increase = 0.3
+        ##bot.run("germany")
+        #bot.run()
+
+        bot = ThresholdSpeedSearcher(s, name, key)
+        bot.cruising_speed = 2.5
+        bot.targeted_radius = 60
+        bot.already_switched = True
+        bot.run("germany")
 
