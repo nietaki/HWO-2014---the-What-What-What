@@ -37,7 +37,10 @@ if __name__ == "__main__":
         #    bot.velocity_increase = 0.1
         #    bot.run("germany")
 
-        bot = PhysicsTester(s, name, key)
+        #bot = PhysicsTester(s, name, key)
+        bot = ConstVelocity(s, name, key)
+        bot.target_velocity = 5.9
+        bot.velocity_increase = 0.3
         #bot.run("germany")
         bot.run()
 
