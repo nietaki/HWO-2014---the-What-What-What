@@ -26,9 +26,9 @@ class KeimolaAccelerator(BaseBot):
 
 
 class GradualAccelerator(BaseBot):
-    cur_throttle = 0.1
+    cur_throttle = 0.59
     target_ticks = 2000
-    diff = 1.0/target_ticks
+    diff = 0.06/target_ticks
 
     def on_car_positions(self, data, tick):
         self.cur_throttle += self.diff

@@ -17,9 +17,9 @@ if __name__ == "__main__":
         #bot = NoobBot(s, name, key)
         #bot = KeimolaBreaker(s, name, key)
         #bot = KeimolaAccelerator(s, name, key)
-        #bot = GradualAccelerator(s, name, key)
+        bot = GradualAccelerator(s, name, key)
         #bot = SwitchAndConstVelocity(s, name, key)
-        #bot.run()
+        bot.run()
 
         #bot = ConstVelocity(s, name, key)
         #bot.target_velocity = 5.0
@@ -44,9 +44,10 @@ if __name__ == "__main__":
         ##bot.run("germany")
         #bot.run()
 
-        bot = ThresholdSpeedSearcher(s, name, key)
-        bot.cruising_speed = 2.5
-        bot.targeted_radius = 60
-        bot.already_switched = True
-        bot.run("germany")
+        #bot = ThresholdSpeedSearcher(s, name, key)
+        #bot.cruising_speed = 2.5
+        #bot.targeted_radius = 60
+        #bot.already_switched = True
+        #bot.run("germany")
+
 
