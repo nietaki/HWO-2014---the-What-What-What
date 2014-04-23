@@ -45,6 +45,11 @@ pdfkeywords={}}
 \def\imod#1{\allowbreak\mkern10mu({\operator@font mod}\,\,#1)}
 \makeatother
 
+\makeatletter
+\def\imax#1{\allowbreak({\operator@font max}\,\,#1)}
+\makeatother
+
+
 \begin{document}
 \sloppy
 \maketitle
@@ -53,7 +58,7 @@ Jako, że będziemy używali w kodzie oznaczeń angielskich, a większość lite
 
 \subsubsection{podstawowe}
 $t$ - time - czas, wyrażony w intowych tickach \\
-$s$ - distance - droga, wyrażona we flatach \\
+$s$ - distance - droga, wyrażona we floatach \\
 $V$ - velocity - prędkość \\
 $a$ - engine acceleration - przyspieszenie odsilnikowe \\
 $e$ - engine power / maximal acceleration - ``moc'' silnika, maksymalne przyspieszenie jakie silnik może nadać samochodowi - w naszej pierwszej planszy ma wartość $0.2$  \\
@@ -63,10 +68,16 @@ $d$ - drag coefficient - współczynnik oporu - w naszej pierwszej planszy ma wa
 $c$ - net acceleration - przyspieszenie wypadkowe
 \subsubsection{zaawansowane}
 Te tutaj mogą się jeszcze zmienić, bo jeszcze nie wiemy, co rządzi kątem, zakrętami itd.\\
-$\alpha$ - slip angle - kąt driftu\\
+$\alpha$ - slip angle - kąt driftu - jeśli odchylamy się w prawo od kierunku toru jest dodatni, jeśli w lewo - ujemny\\
 $r$ - bend radius - promień (faktyczny - z uwzględnieniem pasa itd) zakrętu\\
 $m$ - mass - masa samochodu \\
-$F_d$ - siła dośrodkowa \\
+$\omega$ - prędkość kątowa \\
+$M$ - wypadkowy moment siły \\
+$M_p$ - prostujący moment siły \\
+$p$ - współczynnik prostujący, u nas równy $0.00125$\\
+$M_d$ - dampening - tłumiący moment siły \\
+$\zeta$ - współczynnik tłumienia\\
+$M_c$ - odśrodkowy moment siły \\
 $F_t$ - maksymalna siła przyczepności opon \\
 \section{wzory}
 \subsection{jazda po prostej}
@@ -78,15 +89,15 @@ $c = \frac{dV}{dt}$ - przyspieszenie wypadkowe
 
 $c = a - b$ - wypadkowe przyspieszenie zależy od przyspieszenia odsilnikowego i od oporów
 
-$a = e * g$ - przy czym $e$ nie jest znane, trzeba je wyliczyć
+$a = e \cdot g$ - przy czym $e$ nie jest znane, trzeba je wyliczyć
 
-$b = V * d$ - opór jest wprost proporcjonalny do prędkości
+$b = V \cdot d$ - opór jest wprost proporcjonalny do prędkości
 
-Więc $c = e*g - V*d$. 
+Więc $c = e\cdot g - V\cdot d$. 
 
 Dobrym podejściem do szybkiego tego mierzenia $d$ i $e$ jest wciśnięcie gazu do dechy na starcie i w pewnym momencie zdjęcie gazu na jeden tick. W czasie zdjęcia gazu na ten jeden tick możemy obliczyć $d$, a potem odwołując się do wcześniejszych wartości można policzyć $e$ już uwzględniając jakie były w jakimś tam momencie opory. Być może liczenie tego z pierwszego ticku przyspieszającego też będzie działało - trzeba sprawdzić (na przykład w tym excelu, którego mam pod windą).
 
-Wzór na prędkość w chwili $x+1$: $$V_{x+1} = V_{x} + (e * g - V_x * d)$$
+Wzór na prędkość w chwili $x+1$: $$V_{x+1} = V_{x} + (e \cdot  g - V_x \cdot  d)$$
 
 Wyprowadzenie wzoru na położenie gazu potrzebne do utrzymania prędkości $V_0$: 
 
@@ -94,7 +105,7 @@ $c=0$
 
 $a=b$
 
-$e * g = V_0 * d$
+$e \cdot  g = V_0 \cdot  d$
 
 $g = \frac{V_0d}{e}$
 
@@ -111,20 +122,41 @@ Przez to, że opór zmienia się w zależności od prędkości, nie mamy prostyc
 
 Kąt, przy jakim wypadamy z trasy, jest stały, niezależny od prędkości i promienia skrętu, chociaż pewnie jest jedną ze stałych fizycznych. W naszym przypadku z zakrętu wypada się po przekroczeniu/osiągnięciu kąta 60\textdegree.
 
-Najogólniej, wzór na ``stabilny'' kąt dla jednego promienia skrętu w zależności od prędkości jest $\alpha = A * V + B$, jeśli $\alpha>0$, $0$ wpp, gdzie $A$ i $B$ to pewne współczynniki. Ustalenie tych współczynników w zaleśności od kąta właśnie trwa, ale wydaje mi się, że $B$ jest stałe, tylko $A$ się zmienia.
-
-Ciekawa sprawa - zmiana slip angle też ma pewną ``inercję'' - nawet jeśli kąt stabilny to na przykład 45\textdegree, to jeśli kąt w szybkim zakręcie przybiera od zera, to 45\textdegree nie będzie ``nieprzekraczalną'' asymptotą, tylko kąt przekroczy to 45\textdegree, potem się wachnie i wróci do tych 45\textdegree. Trudno mi to na szyko zdefiniować, ale dobrze to widać na wykresie, który dodam później.
-
-\subsubsection{inne przemyślenia nie mające związku z rzeczywistością}
-
-Jest wzór na siłę dośrodkową - siłę skierowaną środka łuku potrzebną, żeby coś zasuwało z jakąś prędkością po zadanym łuku. 
-
 $F_d = \frac{mV^2}{r}$
 
-Zakładając, że przyczepność kół jest stała, można się domyślać, że samochód będzie miał pewną maksymalną siłę przyczepności (?) jaką mogą zapewnić opony, powyżej której, będzie driftował - $F_t$. Kiedy wyliczone $F_d > F_t$ - będzie zaczynał driftować. Niekoniecznie, bo być może część przyczepności będzie (jak w rzeczywistości) ``pochłaniało'' napędzanie samochodu $F_n = a * m$ i trzeba policzyć wypadkową z prostopadłych $F_d$ i $F_n$, która będzie przekraczała $F_t$ kiedy przyczepność będzie zrywana. To wszystko domysły, zobaczymy.
+\subsubsection{slip angle dynamics}
+Slip angle daje się opisać uproszczonymi wzorami na fizyczny ruch obrotowy. Żeby zmniejszyć liczbę współczynników wzory które będę podawał niekoniecznie są prawdziwe IRL, ale działają w HWO i mają minimalną potrzebną liczbę współczynników - przyspieszenia będą się mieszać z siłami :).
 
-Podobnie jestem przekonany, że położenie \textit{guide flag} też ma kluczowe znaczenie - im bardziej centralne położenie pod samochodem, tym jest stabilniejszy w zakrętach - zobaczymy.
+Działa zasada zachowania momentu pędu - prędkość obrotowa (zmiana kąta w czasie) nie zmieniałaby się, gdyby nie działanie momentów siły (przyspieszeń kątowych). W naszym przypadku działają 3 takie siły/przyspieszenia:
+\begin{itemize}
+  \item $M_p$ - przyspieszenie prostujące (biorące się z np oporów) 
+ \item $M_d$ -  dampening  - spowalniające ruch obrotowy, niezależnie od jego kierunku
+ \item $M_c$ -przyspieszenie odśrodkowe - działa na zakrętach, skierowane zawsze do zewnątrz zakrętów
+\end{itemize}
 
-Generalnie wydaje mi się, że w tym momencie trzeba zrobić eksperymenty, przy jakich prędkościach samochód zaczyna driftować w zależności od promienia zakrętu, ale najlepiej przy minimalnym przyspieszeniu, żeby wyeliminować wpływ przyspieszenia na wzór... :S
+Dwie pierwsze z powyższych sił mają dużo wspólnego z ``lekko przytłumionym oscylatorem harmonicznym'', o którym jest dużo napisane na wikipedii.
+
+Poniższe wzory działają (znowu) z ticku na tick - wartości są aktualizowane na podstawie wartości z poprzedniego ticku
+
+$\alpha_{t+1} = \alpha_{t} + \omega$
+
+$\omega_{t+1} = \omega_{t} + M$
+
+$M = M_p + M_d + M_c$
+
+$M_p = - v \cdot  \alpha \cdot  p$
+
+$M_d = - \omega \cdot  \zeta$
+
+$M_c$ - dokładny wzór jest nieznany, ale jest zależne tylko od promienia $r$ i prędkości $v$ - nie potrafimy go liczyć dokładnie.
+
+Znaczy to, że możemy z praktycznie dowolną precyzją liczyć stan samochodu tylko kiedy jedzie po prostej - w zakrętach musimy się na razie zdać na przybliżenia.
+
+Wykres $M_c$ ma kształt podobny do $M_c \approx max(\frac{V^2}{r} - F_t, 0) \cdot  m$ (z dokładnością do znaku, powinien być ujemny na zakrętach o ujemnym kącie), ale nie udało się uzyskać współczyników, które dałyby bliski zeru błąd. Można jednak założyć, że $M_c = f(V, r)$ i na tej podstawie tablicować i przbyliżać
+
+Podobnie jak ze wzorami na prostej przydałoby się wyprowadzić wzory na kąt i prędkość kątową od czasu, dla (stałej prędkości albo stałego przyspieszenia) i stałego $r$. Dzięki nim możnaby szybko sprawdzać, z jaką prędkością można wchodzić w nadchodzący zakręt.
+
+\subsubsection{inne przemyślenia nie mające związku z rzeczywistością}
+Jestem przekonany, że położenie \textit{guide flag} też ma kluczowe znaczenie - im bardziej centralne położenie pod samochodem, tym jest stabilniejszy w zakrętach - zobaczymy.
 
 \end{document}
