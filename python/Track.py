@@ -2,9 +2,8 @@ import math
 
 __author__ = 'nietaki'
 
+
 class Track(object):
-    track = None
-    race_session = None
 
     def __init__(self, track, race_session):
         self.track = track

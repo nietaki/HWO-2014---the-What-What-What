@@ -3,7 +3,13 @@ __author__ = 'nietaki'
 # initializing with default values
 e = 0.2  # engine power
 d = 0.02  # drag coefficient
+p = 0.00125  # straightening coefficient
+zeta = 0.1  # dampening coefficient
 
+# now for the centrifugal force
+# M_c = A * V^2 / r - B, where B is non-negative
+A = 2.67330284184616
+B = 0.855051077339845
 
 def calculate_drag_coefficient(v1, v2):
     """
@@ -53,7 +59,7 @@ def velocity_after_time(v0, n, throttle):
     return (pow(1.0 - d, n) * (-v0*d - d*t + t) + (d-1) * t)/((d-1.0) * d)
 
 
-def step(v0, throttle):
+def velocity_and_distance_step(v0, throttle):
     """
     :returns (new_speed, distance_travelled) after one tick
     """
@@ -69,7 +75,7 @@ def distance_to_break(v0, target_velocity):
     dist = 0.0
     v = v0
     while v > target_velocity:
-        v, new_dist = step(v, 0.0)
+        v, new_dist = velocity_and_distance_step(v, 0.0)
         dist += new_dist
     return dist
 
@@ -81,9 +87,12 @@ def velocity_after_distance(v0, distance, throttle):
     dist = 0.0
     v = v0
     while dist < distance:
-        v, new_dist = step(v, throttle)
+        v, new_dist = velocity_and_distance_step(v, throttle)
         dist += new_dist
     return v
 
 
+def estimate_centrifugal_force(v, r):
+    #TODO add additional, more precise and complex ways
+    return max(0, v*v/r * A - B)
 
