@@ -108,7 +108,6 @@ class BaseBot(object):
             color = car_data['id']['color']
             self.cars[color].on_car_position(car_data, new_tick)
 
-        #FIXME this below is pretty ugly
         if self.csv_filename:
             self.lines.append(self.my_car().csv_row())
 

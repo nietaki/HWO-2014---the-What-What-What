@@ -143,8 +143,8 @@ def step(car, throttle=None):
     tick_distance = car.velocity
 
     if car.in_piece_distance + tick_distance >= car.current_track_piece().true_piece_length(car.lane):
-        car.in_piece_distance = (car.in_piece_distance + tick_distance) - car.current_track_piece().true_radius(car.lane)
-        car.piece_position
+        car.in_piece_distance = (car.in_piece_distance + tick_distance) - car.current_track_piece().true_length(car.lane)
+        car.track_piece_index += 1
     else:
         car.in_piece_distance += tick_distance
 
