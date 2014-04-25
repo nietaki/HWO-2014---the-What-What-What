@@ -33,62 +33,22 @@ class Track(object):
     @deprecated
     def radius(self, piece_index):
         return self.track_pieces[piece_index].radius
-        #current_piece = self.track_pieces_deprecated[piece_index]
-        #if 'length' in current_piece:
-        #    #straight
-        #    return float('inf')
-        #return current_piece['radius']
 
     @deprecated
     def piece_straight(self, piece_index):
         return self.track_pieces[piece_index].is_straight
-        #return 'length' in self.track_pieces_deprecated[piece_index]
 
     @deprecated
     def bend_direction(self, piece_index):
         return self.track_pieces[piece_index].bend_direction
-        #"""
-        #:returns 0 for straight, -1 for left, +1 for right
-        #"""
-        #current_piece = self.track_pieces_deprecated[piece_index]
-        #if self.piece_straight(piece_index):
-        #    return 0
-        #if current_piece['angle'] > 0:
-        #    return 1
-        #else:
-        #    return -1
 
     @deprecated
     def true_radius(self, piece_index, lane):
         return self.track_pieces[piece_index].true_radius(lane)
-        #current_piece = self.track_pieces_deprecated[piece_index]
-
-        #distance_from_center = self.lanes[lane]['distanceFromCenter']
-        #true_radius = self.radius(piece_index)
-        #if true_radius == float('inf'):
-        #    return true_radius
-
-        #angle = current_piece['angle']
-        #if angle > 0:
-        #    #right hand turn
-        #    true_radius -= distance_from_center
-        #else:
-        #    #left hand turn
-        #    true_radius += distance_from_center
-        #return true_radius
 
     @deprecated
     def true_piece_length(self, piece_index, lane):
         return self.track_pieces[piece_index].true_piece_length(lane)
-        #current_piece = self.track_pieces_deprecated[piece_index]
-        #if 'length' in current_piece:
-        #    #straight
-        #    return current_piece['length']
-        #else:
-        #    #bend
-        #    angle = current_piece['angle']
-        #    proportion = abs(angle) / 360.0
-        #    return proportion * 2 * math.pi * self.true_radius(piece_index, lane)
 
     def distance_diff(self, piece_index_1, in_piece_distance_1, piece_index_2, in_piece_distance_2, lane):
         if piece_index_1 == piece_index_2:
