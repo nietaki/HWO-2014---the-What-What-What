@@ -9,6 +9,9 @@ class CarState(object):
     messages, the throttle comes from the bot"""
 
     def __init__(self, track_object, game_init_car_fragment):
+        """
+        :type track_object: Track
+        """
         self.name = game_init_car_fragment['id']['name']
         self.color = game_init_car_fragment['id']['color']
         self.dimensions = game_init_car_fragment['dimensions']
@@ -18,11 +21,9 @@ class CarState(object):
 
         #basic stats
         self.tick = 0
-        self.tick_delta = 1
 
         self.track_piece_index = 0
         self.in_piece_distance = 0.0
-        self.distance_delta = 0.0
         self.start_lane_index = 0
         self.end_lane_index = 0
 
@@ -61,6 +62,9 @@ class CarState(object):
     def lane(self):
         return self.end_lane_index
 
+    def current_track_piece(self):
+        return self.track.track_pieces[self.track_piece_index]
+
     def on_car_position(self, car_data, new_tick):
         #FIXME this is a mess
         new_slip_angle = car_data['angle']
@@ -80,19 +84,14 @@ class CarState(object):
         new_in_piece_distance = self.piece_position['inPieceDistance']
 
         #FIXME this won't work correctly when switching on bends - the track lengths vary
-        self.distance_delta = self.track.distance_diff(self.track_piece_index, self.in_piece_distance,
+        new_velocity = self.track.distance_diff(self.track_piece_index, self.in_piece_distance,
                                                        new_track_piece_index,
                                                        new_in_piece_distance, self.lane())
-        new_velocity = self.distance_delta
         self.acceleration = (new_velocity - self.velocity)
         self.velocity = new_velocity
 
         self.track_piece_index = new_track_piece_index
         self.in_piece_distance = new_in_piece_distance
-
-
-
-
 
         #print("tick: {0}, tick_delta: {1},distance_delta: {2}, velocity: {3}, acceleration: {4}".
         #      format(self.tick,
@@ -118,7 +117,6 @@ class CarState(object):
         row["piece_index"] = self.track_piece_index
         row["lane_radius"] = self.track.true_radius(self.track_piece_index, self.end_lane_index)
         row["in_piece_distance"] = self.in_piece_distance
-        row["distance_delta"] = self.distance_delta
         row["velocity"] = self.velocity
         row["acceleration"] = self.acceleration
         row["is_crashed"] = int(self.crashed)
@@ -129,7 +127,6 @@ class CarState(object):
                 "car_id",
                 "map_id",
                 "throttle",
-                "distance_delta",
                 "velocity",
                 "acceleration",
                 "lane_radius",

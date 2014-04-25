@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
 __author__ = 'nietaki'
+
+from CarState import CarState
 
 # initializing with default values
 e = 0.2  # engine power
@@ -92,7 +95,59 @@ def velocity_after_distance(v0, distance, throttle):
     return v
 
 
-def estimate_centrifugal_force(v, r):
+def estimate_M_c(v, r):
     #TODO add additional, more precise and complex ways
     return max(0, v*v/r * A - B)
+
+def a(throttle):
+    return e * throttle
+
+def b(v):
+    return -v * d
+
+def M_p(v, alpha):  # siła prostująca
+    return -v * alpha * p
+
+
+def M_d(omega, zeta):  # dampening force
+    return -omega * zeta
+
+
+def M(car):
+    """
+    :type car: CarState
+    """
+    ret = M_p(car.velocity, car.slip_angle)
+    ret += M_d(car.angle_velocity, zeta)
+    ret += estimate_M_c(car.velocity, car.current_track_piece().true_radius(car.lane()))
+    return ret
+
+def step(car, throttle=None):
+    """
+    :type car:CarState
+    """
+    if throttle is None:
+        throttle = car.throttle
+
+    c = a(throttle) + b(car.velocity)
+
+    #first we update angles with the old velocity and so on values
+    #only afterwards we update the speed, velocity and acceleration, since they are not affected
+    car.angle_acceleration = M(car)
+    car.angle_velocity = car.angle_velocity + car.angle_acceleration
+    car.slip_angle = car.slip_angle + car.angle_velocity
+
+    car.acceleration = c
+    car.velocity = car.velocity + car.acceleration
+
+    tick_distance = car.velocity
+
+    if car.in_piece_distance + tick_distance >= car.current_track_piece().true_piece_length(car.lane):
+        car.in_piece_distance = (car.in_piece_distance + tick_distance) - car.current_track_piece().true_radius(car.lane)
+        car.piece_position
+    else:
+        car.in_piece_distance += tick_distance
+
+
+
 
