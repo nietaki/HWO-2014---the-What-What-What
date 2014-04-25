@@ -17,9 +17,9 @@ if __name__ == "__main__":
         #bot = NoobBot(s, name, key)
         #bot = KeimolaBreaker(s, name, key)
         #bot = KeimolaAccelerator(s, name, key)
-        bot = GradualAccelerator(s, name, key)
+        #bot = GradualAccelerator(s, name, key)
         #bot = SwitchAndConstVelocity(s, name, key)
-        bot.run()
+        #bot.run()
 
         #bot = ConstVelocity(s, name, key)
         #bot.target_velocity = 5.0
@@ -37,12 +37,12 @@ if __name__ == "__main__":
         #    bot.velocity_increase = 0.1
         #    bot.run("germany")
 
-        #bot = PhysicsTester(s, name, key)
+        bot = PhysicsTester(s, name, key)
         #bot = ConstVelocity(s, name, key)
         #bot.target_velocity = 5.9
         #bot.velocity_increase = 0.3
         ##bot.run("germany")
-        #bot.run()
+        bot.run()
 
         #bot = ThresholdSpeedSearcher(s, name, key)
         #bot.cruising_speed = 2.5

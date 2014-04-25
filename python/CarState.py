@@ -107,7 +107,7 @@ class CarState(object):
         row["car_id"] = self.name
         row["map_id"] = self.track.track_id
         row["throttle"] = self.throttle
-        row["can_switch"] = int(self.track.track_pieces[self.track_piece_index].get('switch', False))
+        row["can_switch"] = int(self.track.track_pieces_deprecated[self.track_piece_index].get('switch', False))
         row["lane_start"] = self.start_lane_index
         row["lane_end"] = self.end_lane_index
         row["bend_direction"] = self.track.bend_direction(self.track_piece_index)
