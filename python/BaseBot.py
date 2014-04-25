@@ -122,7 +122,8 @@ class BaseBot(object):
         # within a certain period the server will send you an error message and disqualify you. If there's nothing your
         # bot wants to "say", you can send a "ping" message described below. The server also processes only one message
         # / bot /tick, so there's no point sending more.
-        self.ping()
+        if new_tick is not None:
+            self.ping()
         print("BaseBot says: Car positions")
 
     def on_crash_base(self, data, tick):
@@ -211,5 +212,4 @@ class BaseBot(object):
                 msg_map[msg_type](data, tick)
             else:
                 print("Got unexpected {0}".format(msg_type))
-                self.ping()
             line = socket_file.readline()
