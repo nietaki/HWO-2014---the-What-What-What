@@ -27,7 +27,7 @@ class PhysicsTester(BaseBot):
         """
         if (self.my_car().slip_angle > 50 and self.my_car().angle_velocity > 1.0) or \
            (self.my_car().slip_angle < -50 and self.my_car().angle_velocity < -1.0):
-            print("That's too dangerous, brother!")
+            #print("That's too dangerous, brother!")
             self.throttle(0.3)
             return
         next_turn_id = self.track.next_bend_id(piece_index, min(radius, 150))
@@ -37,17 +37,18 @@ class PhysicsTester(BaseBot):
             minimal_distance_to_break = physics.distance_to_break(self.my_car().velocity, target_velocity)
             if minimal_distance_to_break >= distance_until_sharp_turn and (self.my_car().velocity - target_velocity) > 0.1:
                 self.throttle(0.0)
-                print("gotta slow down to {0}!".format(target_velocity))
+                #print("gotta slow down to {0}!".format(target_velocity))
                 return
             else:
-                print('there is a turn, but nothing serious yet, breaking distance is {0}, {1} available'.format(minimal_distance_to_break, distance_until_sharp_turn))
+                0 == 0
+                #print('there is a turn, but nothing serious yet, breaking distance is {0}, {1} available'.format(minimal_distance_to_break, distance_until_sharp_turn))
 
         if radius < 150:
             target_speed = self.radius_speed_dict[radius]
-            print("gonna set throttle to {0}".format(target_speed / 10))
+            #print("gonna set throttle to {0}".format(target_speed / 10))
             self.throttle(target_speed / 10)  # TODO rely on physics
         else:
-            print("full ahead, cap'n")
+            #print("full ahead, cap'n")
             self.throttle(1.0)
 
 

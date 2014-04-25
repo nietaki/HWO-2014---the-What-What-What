@@ -1,5 +1,6 @@
 #!/bin/bash
 
-virtualenv env --no-site-packages --distribute
+#virtualenv env --no-site-packages --distribute
+virtualenv env --system-site-packages --distribute
 
 source env/bin/activate
