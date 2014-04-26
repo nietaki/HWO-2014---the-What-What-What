@@ -5,7 +5,7 @@ from alg import my_bisect
 import copy
 import numpy as np
 from collections import deque, namedtuple
-
+from bisect import bisect
 
 class CarState(object):
     """stores all the state of a car (position, velocity and others), ours or theirs. Most of the info comes from the server
@@ -51,6 +51,7 @@ class CarState(object):
 
         self.vaoMsq = deque()
 
+
     def crash(self):
         self.crashed = True
 
@@ -80,6 +81,14 @@ class CarState(object):
         new_slip_angle = car_data['angle']
         new_angle_velocity = new_slip_angle - self.slip_angle
 
+        # old values used for M_c estimation
+        old_v = self.velocity
+        alpha = self.slip_angle
+        omega = self.angle_velocity
+        old_r = self.current_track_piece().true_radius(self.lane())
+        was_switching = self.is_switching()
+        # now back to regular business
+
         self.angle_acceleration = new_angle_velocity - self.angle_velocity
         self.angle_velocity = new_angle_velocity
 
@@ -100,14 +109,14 @@ class CarState(object):
         self.acceleration = (new_velocity - self.velocity)
 
         if not self.velocity and new_velocity and my_car:
-            calculate_engine_power_from_first_tick(new_velocity, 1.0)  #TODO set to 1.0 just in case
+            calculate_engine_power_from_first_tick(new_velocity, self.throttle)
 
         self.velocity = new_velocity
 
         self.track_piece_index = new_track_piece_index
         self.in_piece_distance = new_in_piece_distance
 
-        # at the very end, the straightening forces:
+        ### STRAIGHTENING_FORCES ###
         t = self.VaoMs(self.velocity, self.slip_angle, self.angle_velocity, self.angle_acceleration,
                        self.track.track_pieces[self.track_piece_index].is_straight)
         self.vaoMsq.append(t)
@@ -127,13 +136,22 @@ class CarState(object):
                 M1 = self.vaoMsq[2].M
                 estimate_p_and_zeta(v0, alpha0, omega0, M0, v1, alpha1, omega1, M1)
 
+        ### end STRAIGHTENING_FORCES ###
 
-                #print("tick: {0}, tick_delta: {1},distance_delta: {2}, velocity: {3}, acceleration: {4}".
-                #      format(self.tick,
-                #             self.tick_delta,
-                #             self.distance_delta,
-                #             self.velocity,
-                #             self.acceleration))
+        ### centrifugal_forces ###
+        if p_and_zeta_estimated and not was_switching and old_v and not self.crashed:
+            #we need p and zeta to do this
+            calculated_M_c = abs(calculate_M_c(old_v, alpha, omega, self.angle_acceleration))
+            global r_v2_Mc_dict
+
+            if old_r not in r_v2_Mc_dict:
+                r_v2_Mc_dict[old_r] = dict()
+            v2 = old_v * old_v
+            # keys_sorted = sorted(r_v2_Mc_dict[old_r].keys())
+            # FIXME: add new velocities only if it's necessary
+            print("Adding new M_c value. M_c({0}, {1}) = {2}".format(old_r, old_v, calculated_M_c))
+            r_v2_Mc_dict[old_r][v2] = calculated_M_c
+
 
 # the actual physics
 
@@ -150,8 +168,9 @@ zeta = 0.1  # dampening coefficient
 A = 2.67330284184616
 B = 0.855051077339845
 
-crash_angle = 50
+crash_angle = 57
 
+r_v2_Mc_dict = dict()
 
 def calculate_drag_coefficient(v1, v2):
     """
@@ -292,8 +311,42 @@ def velocity_after_distance(v0, distance, throttle):
 
 
 def estimate_M_c(v, r):
-    #TODO add additional, more precise and complex ways
+    """
+    used to get M_c value for predictions
+    """
+    if r > 10000 or not v:
+        return 0
+    v2 = v * v
+    if r in r_v2_Mc_dict:
+        if v2 in r_v2_Mc_dict[r]:
+            return r_v2_Mc_dict[r][v2]
+        if len(r_v2_Mc_dict[r]) >= 2:
+            keys = sorted(r_v2_Mc_dict[r].keys())
+            idx = bisect(keys, v2)
+            if idx == 0:
+                #FIXME we want to extrapolate down
+                print('M_c low')
+                return r_v2_Mc_dict[r][keys[0]]
+            elif idx == len(keys):
+                #FIXME we want to extrapolate up
+                print('M_c high')
+                return r_v2_Mc_dict[r][keys[-1]]
+            else:
+                #middle
+                print('M_c mid')
+                lo = keys[idx - 1]
+                hi = keys[idx]
+
+                prop = (v2 - lo) / (hi - lo)
+
+                lo_val = r_v2_Mc_dict[r][lo]
+                hi_val = r_v2_Mc_dict[r][hi]
+                return lo_val + prop * (hi_val - lo_val)
+
     ret = max(0, v * v / r * A - B)
+
+    #TODO: replace this with something more robust
+    print('estimated M_c from the equation for r={0} and v={1}'.format(r, v))
     #print("estimated M_c={0} for v={1} and r={2}".format(ret, v, r))
     return ret
 
@@ -332,6 +385,11 @@ def M_p(v, alpha):  # siła prostująca
 def M_d(omega):  # dampening force
     return -omega * zeta
 
+def calculate_M_c(v, alpha, omega, actual_angle_acceleration):
+    """
+    used for calculating M_c to store it in the memory
+    """
+    return actual_angle_acceleration - M_p(v, alpha) - M_d(omega)
 
 def M(car):
     """
@@ -339,7 +397,7 @@ def M(car):
     """
     ret = M_p(car.velocity, car.slip_angle)
     ret += M_d(car.angle_velocity)
-    ret += estimate_M_c(car.velocity, car.current_track_piece().true_radius(car.lane()))
+    ret += estimate_M_c(car.velocity, car.current_track_piece().true_radius(car.lane())) * car.current_track_piece().bend_direction
     return ret
 
 
