@@ -100,6 +100,7 @@ class BaseBot(object):
 
     def on_game_start(self, data, tick):
         print("BaseBot says: Race started")
+        self.throttle(1.0)
 
     def on_car_positions_base(self, data, new_tick):
         if not new_tick:
