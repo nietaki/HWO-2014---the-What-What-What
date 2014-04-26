@@ -15,6 +15,7 @@ class PhysicsTester(BaseBot):
         #self.radius_speed_dict = {40: 4.5, 60: 5.1, 90: 6.3, 110: 7.0}
 
     def on_car_positions(self, data, tick):
+        print("on car positions for tick{0}", tick)
         piece_index = self.my_car().track_piece_index
         lane = self.my_car().lane()
         radius = self.track.true_radius(piece_index, lane)
