@@ -64,7 +64,7 @@ class CarState(object):
     def current_track_piece(self):
         return self.track.track_pieces[self.track_piece_index]
 
-    def on_car_position(self, car_data, new_tick):
+    def on_car_position(self, car_data, new_tick, my_car):
         #FIXME this is a mess
         new_slip_angle = car_data['angle']
         new_angle_velocity = new_slip_angle - self.slip_angle
@@ -87,6 +87,10 @@ class CarState(object):
                                                        new_track_piece_index,
                                                        new_in_piece_distance, self.lane())
         self.acceleration = (new_velocity - self.velocity)
+
+        if not self.velocity and new_velocity:
+
+
         self.velocity = new_velocity
 
         self.track_piece_index = new_track_piece_index

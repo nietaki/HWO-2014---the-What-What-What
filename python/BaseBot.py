@@ -107,7 +107,7 @@ class BaseBot(object):
             new_tick = 0
         for car_data in data:
             color = car_data['id']['color']
-            self.cars[color].on_car_position(car_data, new_tick)
+            self.cars[color].on_car_position(car_data, new_tick, color == self.car_color)
 
         if self.csv_filename:
             self.lines.append(csv_handler.csv_row(self.my_car()))
