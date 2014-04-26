@@ -6,7 +6,7 @@ import socket
 import sys
 from Track import Track
 from CarState import CarState
-
+import csv_handler
 
 class BaseBot(object):
     def __init__(self, sock, name, key):
@@ -110,7 +110,7 @@ class BaseBot(object):
             self.cars[color].on_car_position(car_data, new_tick)
 
         if self.csv_filename:
-            self.lines.append(self.my_car().csv_row())
+            self.lines.append(csv_handler.csv_row(self.my_car()))
 
         self.on_car_positions(data, new_tick)
 
@@ -152,7 +152,7 @@ class BaseBot(object):
 
     def save_csv(self):
         with open('debug_output/' + self.csv_filename, 'wb') as f:
-            writer = csv.DictWriter(f, self.my_car().csv_keys())
+            writer = csv.DictWriter(f, csv_handler.csv_keys(self.my_car()))
             writer.writeheader()
             writer.writerows(self.lines)
 

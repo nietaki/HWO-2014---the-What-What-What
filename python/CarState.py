@@ -1,9 +1,5 @@
 __author__ = 'nietaki'
 
-import csv
-import physics
-
-
 class CarState(object):
     """stores all the state of a car (position, velocity and others), ours or theirs. Most of the info comes from the server
     messages, the throttle comes from the bot"""
@@ -103,46 +99,3 @@ class CarState(object):
         #             self.velocity,
         #             self.acceleration))
 
-    def csv_row(self):
-        row = dict()
-        row["tick"] = self.tick
-        row["car_id"] = self.name
-        row["map_id"] = self.track.track_id
-        row["throttle"] = self.throttle
-        row["can_switch"] = int(self.track.track_pieces_deprecated[self.track_piece_index].get('switch', False))
-        row["lane_start"] = self.start_lane_index
-        row["lane_end"] = self.end_lane_index
-        row["bend_direction"] = self.track.bend_direction(self.track_piece_index)
-        row["relative_angle"] = self.relative_angle()
-        row["slip_angle"] = self.slip_angle
-        row["angle_velocity"] = self.angle_velocity
-        row["angle_acceleration"] = self.angle_acceleration
-        row["M"] = physics.M(self)
-        row["piece_index"] = self.track_piece_index
-        row["lane_radius"] = self.track.true_radius(self.track_piece_index, self.end_lane_index)
-        row["in_piece_distance"] = self.in_piece_distance
-        row["velocity"] = self.velocity
-        row["acceleration"] = self.acceleration
-        row["is_crashed"] = int(self.crashed)
-        return row
-
-    def csv_keys(self):
-        return ["tick",
-                "car_id",
-                "map_id",
-                "throttle",
-                "velocity",
-                "acceleration",
-                "lane_radius",
-                "relative_angle",
-                "slip_angle",
-                "angle_velocity",
-                "angle_acceleration",
-                "M",
-                "can_switch",
-                "lane_start",
-                "lane_end",
-                "bend_direction",
-                "piece_index",
-                "in_piece_distance",
-                "is_crashed"]
