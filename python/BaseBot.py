@@ -5,7 +5,7 @@ import os
 import socket
 import sys
 from Track import Track
-from CarState import CarState
+from physics import CarState
 import csv_handler
 
 class BaseBot(object):

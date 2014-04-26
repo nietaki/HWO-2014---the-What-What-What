@@ -1,16 +1,147 @@
 # -*- coding: utf-8 -*-
 __author__ = 'nietaki'
 
-from CarState import CarState
 from alg import my_bisect
 import copy
 import numpy as np
+from collections import deque, namedtuple
 
+
+class CarState(object):
+    """stores all the state of a car (position, velocity and others), ours or theirs. Most of the info comes from the server
+    messages, the throttle comes from the bot"""
+
+    def __init__(self, track_object, game_init_car_fragment):
+        """
+        :type track_object: Track
+        """
+        self.name = game_init_car_fragment['id']['name']
+        self.color = game_init_car_fragment['id']['color']
+        self.dimensions = game_init_car_fragment['dimensions']
+        self.track = track_object
+
+        self.throttle = 0.0
+
+        #basic stats
+        self.tick = 0
+
+        self.track_piece_index = 0
+        self.in_piece_distance = 0.0
+        self.start_lane_index = 0
+        self.end_lane_index = 0
+
+        self.velocity = 0.0
+
+        """basically velocity delta"""
+        self.acceleration = 0.0
+
+        #from gameInit
+        self.lanes = None
+        self.car_dimensions = None
+        self.race_session = None
+
+        #from carPositions
+        self.piece_position = None
+        self.slip_angle = 0.0
+
+        self.angle_velocity = 0.0
+        self.angle_acceleration = 0.0
+
+        self.crashed = False
+
+        self.vaoMsq = deque()
+
+    def crash(self):
+        self.crashed = True
+
+    def spawn(self):
+        self.crashed = False
+
+    def set_throttle(self, throttle):
+        self.throttle = throttle
+
+    def relative_angle(self):
+        """ relative meaning it always goes >0 on bends """
+        return self.track.bend_direction(self.track_piece_index) * self.slip_angle
+
+    def lane(self):
+        return self.end_lane_index
+
+    def is_switching(self):
+        return self.start_lane_index != self.end_lane_index
+
+    def current_track_piece(self):
+        return self.track.track_pieces[self.track_piece_index]
+
+    VaoMs = namedtuple('VaoMs', 'velocity alpha omega M straight')
+
+    def on_car_position(self, car_data, new_tick, my_car):
+        #FIXME this is a mess
+        new_slip_angle = car_data['angle']
+        new_angle_velocity = new_slip_angle - self.slip_angle
+
+        self.angle_acceleration = new_angle_velocity - self.angle_velocity
+        self.angle_velocity = new_angle_velocity
+
+        self.slip_angle = new_slip_angle
+        self.piece_position = car_data['piecePosition']
+        self.tick = new_tick
+
+        self.start_lane_index = self.piece_position['lane']['startLaneIndex']
+        self.end_lane_index = self.piece_position['lane']['endLaneIndex']
+
+        new_track_piece_index = self.piece_position['pieceIndex']
+        new_in_piece_distance = self.piece_position['inPieceDistance']
+
+        #FIXME this won't work correctly when switching on bends - the track lengths vary
+        new_velocity = self.track.distance_diff(self.track_piece_index, self.in_piece_distance,
+                                                new_track_piece_index,
+                                                new_in_piece_distance, self.lane())
+        self.acceleration = (new_velocity - self.velocity)
+
+        if not self.velocity and new_velocity and my_car:
+            calculate_engine_power_from_first_tick(new_velocity, 1.0)  #TODO set to 1.0 just in case
+
+        self.velocity = new_velocity
+
+        self.track_piece_index = new_track_piece_index
+        self.in_piece_distance = new_in_piece_distance
+
+        # at the very end, the straightening forces:
+        t = self.VaoMs(self.velocity, self.slip_angle, self.angle_velocity, self.angle_acceleration,
+                       self.track.track_pieces[self.track_piece_index].is_straight)
+        self.vaoMsq.append(t)
+        while len(self.vaoMsq) > 3:
+            self.vaoMsq.popleft()
+
+        if len(self.vaoMsq) == 3:
+            #                      straight                                      alpha != 0
+            if all(map(lambda tup: tup.straight, self.vaoMsq)) and all(map(lambda tup: tup.alpha != 0, self.vaoMsq)):
+                v0 = self.vaoMsq[0].velocity
+                alpha0 = self.vaoMsq[0].alpha
+                omega0 = self.vaoMsq[0].omega
+                M0 = self.vaoMsq[1].M
+                v1 = self.vaoMsq[1].velocity
+                alpha1 = self.vaoMsq[1].alpha
+                omega1 = self.vaoMsq[1].omega
+                M1 = self.vaoMsq[2].M
+                estimate_p_and_zeta(v0, alpha0, omega0, M0, v1, alpha1, omega1, M1)
+
+
+                #print("tick: {0}, tick_delta: {1},distance_delta: {2}, velocity: {3}, acceleration: {4}".
+                #      format(self.tick,
+                #             self.tick_delta,
+                #             self.distance_delta,
+                #             self.velocity,
+                #             self.acceleration))
+
+# the actual physics
 
 # initializing with default values
 e = 0.2  # engine power
 d_calculation_velocity = 0.1
 d = 0.02  # drag coefficient
+p_and_zeta_estimated = False
 p = 0.00125  # straightening coefficient
 zeta = 0.1  # dampening coefficient
 
@@ -20,6 +151,7 @@ A = 2.67330284184616
 B = 0.855051077339845
 
 crash_angle = 50
+
 
 def calculate_drag_coefficient(v1, v2):
     """
@@ -54,6 +186,7 @@ def is_safe_until_simple(input_car_state, throttle, target_piece_id, target_in_p
     b, cs = is_safe_until(input_car_state, throttle, target_piece_id, target_in_piece_distance)
     return b
 
+
 def is_safe_until(input_car_state, throttle, target_piece_id, target_in_piece_distance):
     """
     :param car_state: input car_state. It won't be modified
@@ -76,9 +209,12 @@ def is_safe_until(input_car_state, throttle, target_piece_id, target_in_piece_di
     print("it IS!, based on {0} ticks".format(counter))
     return True, car_state
 
+
 def calculate_engine_power_from_first_tick(v0, throttle):
     global e;
-    e = v0/throttle
+    e = v0 / throttle
+    print("e estimated to be {0}".format(e))
+
 
 def calculate_drag(v1, v2, throttle):
     """
@@ -119,7 +255,7 @@ def velocity_after_time(v0, n, throttle):
     """
     t = e * throttle
     v0 *= 1.0
-    return (pow(1.0 - d, n) * (-v0*d - d*t + t) + (d-1) * t)/((d-1.0) * d)
+    return (pow(1.0 - d, n) * (-v0 * d - d * t + t) + (d - 1) * t) / ((d - 1.0) * d)
 
 
 def velocity_and_distance_step(v0, throttle):
@@ -157,9 +293,10 @@ def velocity_after_distance(v0, distance, throttle):
 
 def estimate_M_c(v, r):
     #TODO add additional, more precise and complex ways
-    ret = max(0, v*v/r * A - B)
+    ret = max(0, v * v / r * A - B)
     #print("estimated M_c={0} for v={1} and r={2}".format(ret, v, r))
     return ret
+
 
 def estimate_p_and_zeta(v0, alpha0, omega0, M0, v1, alpha1, omega1, M1):
     """
@@ -167,20 +304,26 @@ def estimate_p_and_zeta(v0, alpha0, omega0, M0, v1, alpha1, omega1, M1):
     """
     #x0=p x1=zeta
     #
-    b = np.array(M0, M1)
+    global p, zeta, p_and_zeta_estimated
+
+    if p_and_zeta_estimated:
+        return
+    b = np.array([M0, M1])
     a = np.array([[-v0 * alpha0, -omega0], [-v1 * alpha1, -omega1]])
     pz = np.linalg.solve(a, b)
 
-    global p, zeta
     p = pz[0]
     zeta = pz[1]
-
+    print("estimated p={0}, zeta={1}".format(p, zeta))
+    p_and_zeta_estimated = True
 
 def a(throttle):
     return e * throttle
 
+
 def b(v):
     return -v * d
+
 
 def M_p(v, alpha):  # siła prostująca
     return -v * alpha * p
@@ -198,6 +341,7 @@ def M(car):
     ret += M_d(car.angle_velocity)
     ret += estimate_M_c(car.velocity, car.current_track_piece().true_radius(car.lane()))
     return ret
+
 
 def step(car, throttle=None):
     """
@@ -220,7 +364,8 @@ def step(car, throttle=None):
     tick_distance = car.velocity
 
     if car.in_piece_distance + tick_distance >= car.current_track_piece().true_length(car.lane()):
-        car.in_piece_distance = (car.in_piece_distance + tick_distance) - car.current_track_piece().true_length(car.lane())
+        car.in_piece_distance = (car.in_piece_distance + tick_distance) - car.current_track_piece().true_length(
+            car.lane())
         car.track_piece_index = (car.track_piece_index + 1) % car.track.track_piece_count
     else:
         car.in_piece_distance += tick_distance
