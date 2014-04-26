@@ -4,9 +4,12 @@ __author__ = 'nietaki'
 from CarState import CarState
 from alg import my_bisect
 import copy
+import numpy as np
+
 
 # initializing with default values
 e = 0.2  # engine power
+d_calculation_velocity = 0.1
 d = 0.02  # drag coefficient
 p = 0.00125  # straightening coefficient
 zeta = 0.1  # dampening coefficient
@@ -73,18 +76,38 @@ def is_safe_until(input_car_state, throttle, target_piece_id, target_in_piece_di
     print("it IS!, based on {0} ticks".format(counter))
     return True, car_state
 
-def calculate_engine_power(v1, v2, throttle):
+def calculate_engine_power_from_first_tick(v0, throttle):
+    global e;
+    e = v0/throttle
+
+def calculate_drag(v1, v2, throttle):
     """
-    :param v1: float: velocity before one tick of throttle setting
-    :param v2: float: velocity after one tick of throttle setting
-    depends on proper drag coefficient. Works better on non-top speeds and non-zero throttle values
+    depends on knowing the engine power
+    :param v1: velocity before the throttle tick
+    :param v2: velocity after the throttle tick
+    :param throttle: the throttle set
     """
-    c = v2 - v1
-    # c = a - v1 * d
-    # e * throttle = c + v1 * d
-    global e, d
-    e = (c + v1 * d) / throttle
-    return e
+    global d, d_calculation_velocity
+    if v1 > d_calculation_velocity:
+        c = v2 - v1
+        a = e * throttle
+        b = a - c  # b is positive
+        d = b / v1
+        d_calculation_velocity = v1
+
+
+#def calculate_engine_power(v1, v2, throttle):
+#    """
+#    :param v1: float: velocity before one tick of throttle setting
+#    :param v2: float: velocity after one tick of throttle setting
+#    depends on proper drag coefficient. Works better on non-top speeds and non-zero throttle values
+#    """
+#    c = v2 - v1
+#    # c = a - v1 * d
+#    # e * throttle = c + v1 * d
+#    global e, d
+#    e = (c + v1 * d) / throttle
+#    return e
 
 
 def velocity_after_time(v0, n, throttle):
@@ -137,6 +160,21 @@ def estimate_M_c(v, r):
     ret = max(0, v*v/r * A - B)
     #print("estimated M_c={0} for v={1} and r={2}".format(ret, v, r))
     return ret
+
+def estimate_p_and_zeta(v0, alpha0, omega0, M0, v1, alpha1, omega1, M1):
+    """
+    only to be used in straight line after exiting a curve
+    """
+    #x0=p x1=zeta
+    #
+    b = np.array(M0, M1)
+    a = np.array([[-v0 * alpha0, -omega0], [-v1 * alpha1, -omega1]])
+    pz = np.linalg.solve(a, b)
+
+    global p, zeta
+    p = pz[0]
+    zeta = pz[1]
+
 
 def a(throttle):
     return e * throttle
