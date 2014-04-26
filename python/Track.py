@@ -5,22 +5,7 @@ import warnings
 from TrackPiece import TrackPiece, straight_line_radius
 
 
-def deprecated(func):
-    """This is a decorator which can be used to mark functions
-    as deprecated. It will result in a warning being emmitted
-    when the function is used."""
-    def newFunc(*args, **kwargs):
-        warnings.warn("Call to deprecated function %s." % func.__name__,
-                      category=DeprecationWarning)
-        return func(*args, **kwargs)
-    newFunc.__name__ = func.__name__
-    newFunc.__doc__ = func.__doc__
-    newFunc.__dict__.update(func.__dict__)
-    return newFunc
-
-
 class Track(object):
-
     def __init__(self, track, race_session):
         self.track = track
         self.race_session = race_session
@@ -29,26 +14,37 @@ class Track(object):
         self.lanes = self.track['lanes']
         self.track_pieces = map(lambda pc: TrackPiece(pc, self.lanes), self.track_pieces_deprecated)
         self.track_piece_count = len(self.track_pieces_deprecated)
+        # piece id -> macro piece id
+        self.macro_piece_map = dict()
+        # macro_id -> first normal id
+        self.reverse_piece_map = dict()
+        self.compute_macro_pieces()
 
-    @deprecated
+    def compute_macro_pieces(self):
+        self.macro_piece_map[0] = 0
+        self.reverse_piece_map[0] = 0
+        last_macro_index = 0
+        for index in range(1, self.track_piece_count):
+            if not self.track_pieces[index].same_as(self.track_pieces[index - 1]):
+                last_macro_index += 1
+                self.reverse_piece_map[last_macro_index] = index
+            self.macro_piece_map[index] = last_macro_index
+        print(self.macro_piece_map)
+
     def radius(self, piece_index):
         return self.track_pieces[piece_index].radius
 
-    @deprecated
     def piece_straight(self, piece_index):
         return self.track_pieces[piece_index].is_straight
 
-    @deprecated
     def bend_direction(self, piece_index):
         return self.track_pieces[piece_index].bend_direction
 
-    @deprecated
     def true_radius(self, piece_index, lane):
         return self.track_pieces[piece_index].true_radius(lane)
 
-    @deprecated
     def true_piece_length(self, piece_index, lane):
-        return self.track_pieces[piece_index].true_piece_length(lane)
+        return self.track_pieces[piece_index].true_length(lane)
 
     def distance_diff(self, piece_index_1, in_piece_distance_1, piece_index_2, in_piece_distance_2, lane):
         if piece_index_1 == piece_index_2:

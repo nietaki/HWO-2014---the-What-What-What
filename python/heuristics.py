@@ -2,6 +2,7 @@
 __author__ = 'nietaki'
 
 from BaseBot import BaseBot
+from alg import *
 import physics
 
 # parę prostych botow i zastanowie się nad wygodna architekturą dla bota
@@ -15,7 +16,6 @@ class PhysicsTester(BaseBot):
         #self.radius_speed_dict = {40: 4.5, 60: 5.1, 90: 6.3, 110: 7.0}
 
     def on_car_positions(self, data, tick):
-        print("on car positions for tick{0}", tick)
         piece_index = self.my_car().track_piece_index
         lane = self.my_car().lane()
         radius = self.track.true_radius(piece_index, lane)
@@ -51,6 +51,24 @@ class PhysicsTester(BaseBot):
         else:
             #print("full ahead, cap'n")
             self.throttle(1.0)
+
+
+class PhysicsBisector(BaseBot):
+    def __init__(self, sock, name, key):
+        super(PhysicsBisector, self).__init__(sock, name, key)
+        self.piece_look_ahead = 4
+
+    def on_car_positions(self, data, tick):
+        car = self.my_car()
+
+        if not car.crashed:
+            the_until = (car.track_piece_index + self.piece_look_ahead) % car.track.track_piece_count
+            deduced_throttle = my_bisect(0.0, 1.0, 5, lambda t: physics.is_safe_until_simple(car, t, the_until, 0.0))
+            print("decided to go on throttle {0} from {1} to {2}".format(deduced_throttle, car.track_piece_index, the_until))
+            self.throttle(deduced_throttle)
+        else:
+            self.ping()
+
 
 
 

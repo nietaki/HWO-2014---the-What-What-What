@@ -41,8 +41,16 @@ class TrackPiece(object):
             true_radius += distance_from_center
         return true_radius
 
-    def true_piece_length(self, lane):
+    def true_length(self, lane):
         if self.is_straight:
             return self.length
         proportion = abs(self.angle) / 360.0
         return proportion * 2 * math.pi * self.true_radius(lane)
+
+    def same_as(self, other):
+        """
+        :type other: TrackPiece
+        """
+        return  self.radius == other.radius and \
+                self.angle == other.angle and \
+                self.switch == other.switch

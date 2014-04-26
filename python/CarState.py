@@ -1,7 +1,7 @@
 __author__ = 'nietaki'
 
 import csv
-
+import physics
 
 
 class CarState(object):
@@ -62,6 +62,9 @@ class CarState(object):
     def lane(self):
         return self.end_lane_index
 
+    def is_switching(self):
+        return self.start_lane_index != self.end_lane_index
+
     def current_track_piece(self):
         return self.track.track_pieces[self.track_piece_index]
 
@@ -114,6 +117,7 @@ class CarState(object):
         row["slip_angle"] = self.slip_angle
         row["angle_velocity"] = self.angle_velocity
         row["angle_acceleration"] = self.angle_acceleration
+        row["M"] = physics.M(self)
         row["piece_index"] = self.track_piece_index
         row["lane_radius"] = self.track.true_radius(self.track_piece_index, self.end_lane_index)
         row["in_piece_distance"] = self.in_piece_distance
@@ -134,6 +138,7 @@ class CarState(object):
                 "slip_angle",
                 "angle_velocity",
                 "angle_acceleration",
+                "M",
                 "can_switch",
                 "lane_start",
                 "lane_end",
