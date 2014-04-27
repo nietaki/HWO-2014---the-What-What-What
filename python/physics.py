@@ -3,6 +3,7 @@ __author__ = 'nietaki'
 
 from alg import my_bisect
 import copy
+import math
 import numpy as np
 from collections import deque, namedtuple
 from bisect import bisect
@@ -157,19 +158,29 @@ class CarState(object):
         ### centrifugal_forces ###
         if p_and_zeta_estimated and not was_switching and old_v and not self.crashed and not old_r > 10000:
             #we need p and zeta to do this
-            calculated_M_c = abs(calculate_M_c(old_v, alpha, omega, self.angle_acceleration))
             global r_v2_Mc_dict
 
             if old_r not in r_v2_Mc_dict:
                 r_v2_Mc_dict[old_r] = dict()
+                #some starting values to make sure we don't have to add zero values
+                r_v2_Mc_dict[old_r][0.01] = 0.0
+                r_v2_Mc_dict[old_r][0.02] = 0.0
+
+            calculated_M_c = abs(calculate_M_c(old_v, alpha, omega, self.angle_acceleration))
+
+            if calculated_M_c < 0.0001:
+                #this is practically zero, we don't need that
+                return
+
             v2 = old_v * old_v
             keys_sorted = sorted(r_v2_Mc_dict[old_r].keys())
 
             idx = bisect(keys_sorted, v2)
             if idx != 0 and idx != len(keys_sorted):
-                if (keys_sorted[idx] - keys_sorted[idx - 1]) < 0.05:
+                if (math.sqrt(keys_sorted[idx]) - math.sqrt(keys_sorted[idx - 1])) < 0.05:
                     #not adding if the map is already pretty rich in this area
                     return
+
             print("Adding new M_c value. M_c({0}, {1}^2) = {2}".format(old_r, old_v, calculated_M_c))
             r_v2_Mc_dict[old_r][v2] = calculated_M_c
 

@@ -32,7 +32,7 @@ class BaseBot(object):
         date_string = datetime.datetime.now().strftime("%y%m%d_%H%M")
         self.csv_filename = "" + name + "_" + date_string + ".csv"
 
-        self.last_throttle_sent = None
+        self.car_positions_received_time = None
 
 
     ## message handlers and senders ##
@@ -63,12 +63,7 @@ class BaseBot(object):
 
         self.cars[self.car_color].set_throttle(throttle)
         self.msg("throttle", throttle, tick)
-        time_delta = 0;
-        if not self.last_throttle_sent:
-            self.last_throttle_sent = datetime.datetime.now()
-        else:
-            time_delta = millis(self.last_throttle_sent, datetime.datetime.now())
-            self.last_throttle_sent = datetime.datetime.now()
+        time_delta = millis(self.car_positions_received_time, datetime.datetime.now())
 
         print("sent throttle={0} for tick {1} after {2} milliseconds".format(throttle, tick, time_delta))
 
@@ -130,6 +125,7 @@ class BaseBot(object):
     def on_car_positions_base(self, data, new_tick):
         if not new_tick:
             new_tick = 0
+        self.car_positions_received_time = datetime.datetime.now()
         for car_data in data:
             color = car_data['id']['color']
             self.cars[color].on_car_position(car_data, new_tick, color == self.car_color)
