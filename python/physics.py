@@ -353,6 +353,34 @@ def velocity_after_distance(v0, distance, throttle):
         dist += new_dist
     return v
 
+def max_velocity():
+    return e / d
+
+def throttle_for_velocity(v):
+    return v * d / e
+
+def throttle_to_reach_velocity(v0, v_target):
+    """
+    for use in single ticks only, not to plan throttle for a longer period
+    """
+    if v0 > v_target:
+        return 0.0
+    elif v0 + e - v0 * d < v_target:
+        return 1.0
+    else:
+        return throttle_for_velocity(v_target)
+
+
+def estimate_stable_speed_at_angle(true_radius, angle):
+    """
+    M_p = M_c
+    """
+    def ret(v):
+        return abs(M_p(v, angle)) >= estimate_M_c(v, true_radius)
+
+    v_max = max_velocity()
+    return my_bisect(v_max / 10, v_max, 7, ret)
+
 
 def estimate_M_c(v, r):
     """
