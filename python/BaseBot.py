@@ -1,12 +1,17 @@
 import json
 import csv
-from datetime import *
 import os
 import socket
 import sys
 from Track import Track
 from physics import CarState
 import csv_handler
+import datetime
+
+
+def millis(t1, t2):
+    td = t2 - t1
+    return round(td.seconds * 1000 + td.microseconds / 1000)
 
 class BaseBot(object):
     def __init__(self, sock, name, key):
@@ -24,8 +29,10 @@ class BaseBot(object):
         self.sock = sock
         self.name = name
         self.key = key
-        date_string = datetime.now().strftime("%y%m%d_%H%M")
+        date_string = datetime.datetime.now().strftime("%y%m%d_%H%M")
         self.csv_filename = "" + name + "_" + date_string + ".csv"
+
+        self.last_throttle_sent = None
 
 
     ## message handlers and senders ##
@@ -45,9 +52,19 @@ class BaseBot(object):
                                      'trackName': track_name,
                                      'carCount': car_count})
 
-    def throttle(self, throttle):
+    def throttle(self, throttle, tick=None):
+
         self.cars[self.car_color].set_throttle(throttle)
         self.msg("throttle", throttle)
+        time_delta = 0;
+        if not self.last_throttle_sent:
+            self.last_throttle_sent = datetime.datetime.now()
+        else:
+            time_delta = millis(self.last_throttle_sent, datetime.datetime.now())
+            self.last_throttle_sent = datetime.datetime.now()
+
+        print("sent throttle={0} for tick {1} after {2} milliseconds".format(throttle, tick, time_delta))
+
 
     def switch_lane(self, direction_string):
         self.msg('switchLane', direction_string)

@@ -6,6 +6,7 @@ import copy
 import numpy as np
 from collections import deque, namedtuple
 from bisect import bisect
+import datetime
 
 class CarState(object):
     """stores all the state of a car (position, velocity and others), ours or theirs. Most of the info comes from the server
@@ -50,7 +51,6 @@ class CarState(object):
         self.crashed = False
 
         self.vaoMsq = deque()
-
 
     def crash(self):
         self.crashed = True
@@ -334,15 +334,15 @@ def estimate_M_c(v, r):
             idx = bisect(keys, v2)
             if idx == 0:
                 #FIXME we want to extrapolate down
-                print('M_c low')
+                #print('M_c low')
                 return r_v2_Mc_dict[r][keys[0]]
             elif idx == len(keys):
                 #FIXME we want to extrapolate up
-                print('M_c high')
+                #print('M_c high')
                 return r_v2_Mc_dict[r][keys[-1]]
             else:
                 #middle
-                print('M_c mid')
+                #print('M_c mid')
                 lo = keys[idx - 1]
                 hi = keys[idx]
 
@@ -355,7 +355,7 @@ def estimate_M_c(v, r):
     ret = max(0, v * v / r * A - B)
 
     #TODO: replace this with something more robust
-    print('estimated M_c from the equation for r={0} and v={1}'.format(r, v))
+    #print('estimated M_c from the equation for r={0} and v={1}'.format(r, v))
     #print("estimated M_c={0} for v={1} and r={2}".format(ret, v, r))
     return ret
 
