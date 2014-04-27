@@ -36,8 +36,12 @@ class BaseBot(object):
 
 
     ## message handlers and senders ##
-    def msg(self, msg_type, data):
-        self.send(json.dumps({"msgType": msg_type, "data": data}))
+    def msg(self, msg_type, data, tick=None):
+        if not tick:
+            self.send(json.dumps({"msgType": msg_type, "data": data}))
+        else:
+            print("sending msg with gameTick")
+            self.send(json.dumps({"msgType": msg_type, "data": data, "gameTick": tick}))
 
     def send(self, msg):
         self.sock.sendall(msg + "\n")
@@ -55,7 +59,7 @@ class BaseBot(object):
     def throttle(self, throttle, tick=None):
 
         self.cars[self.car_color].set_throttle(throttle)
-        self.msg("throttle", throttle)
+        self.msg("throttle", throttle, tick)
         time_delta = 0;
         if not self.last_throttle_sent:
             self.last_throttle_sent = datetime.datetime.now()
