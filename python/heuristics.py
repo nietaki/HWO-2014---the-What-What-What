@@ -56,7 +56,7 @@ class PhysicsTester(BaseBot):
 class PhysicsBisector(BaseBot):
     def __init__(self, sock, name, key):
         super(PhysicsBisector, self).__init__(sock, name, key)
-        self.piece_look_ahead = 6
+        self.piece_look_ahead = 5
 
     def on_car_positions(self, data, tick):
         car = self.my_car()

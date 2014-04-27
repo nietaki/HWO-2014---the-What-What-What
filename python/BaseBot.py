@@ -43,7 +43,7 @@ class BaseBot(object):
             #print("sending msg with gameTick")
             self.send(json.dumps({"msgType": msg_type, "data": data, "gameTick": tick}))
 
-    def turbo(self, personalized_message):
+    def turbo(self, personalized_message='Here goes nothing!'):
         self.msg("turbo", personalized_message)
 
     def send(self, msg):
@@ -94,6 +94,7 @@ class BaseBot(object):
                 self.join_track(track_name, car_count)
             self.msg_loop()
         except(KeyboardInterrupt, SystemExit):
+            #print(physics.r_v2_Mc_dict)
             self.save_csv()
             raise
 

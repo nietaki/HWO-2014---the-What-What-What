@@ -155,7 +155,7 @@ class CarState(object):
         ### end STRAIGHTENING_FORCES ###
 
         ### centrifugal_forces ###
-        if p_and_zeta_estimated and not was_switching and old_v and not self.crashed:
+        if p_and_zeta_estimated and not was_switching and old_v and not self.crashed and not old_r > 10000:
             #we need p and zeta to do this
             calculated_M_c = abs(calculate_M_c(old_v, alpha, omega, self.angle_acceleration))
             global r_v2_Mc_dict
@@ -163,9 +163,14 @@ class CarState(object):
             if old_r not in r_v2_Mc_dict:
                 r_v2_Mc_dict[old_r] = dict()
             v2 = old_v * old_v
-            # keys_sorted = sorted(r_v2_Mc_dict[old_r].keys())
-            # FIXME: add new velocities only if it's necessary
-            print("Adding new M_c value. M_c({0}, {1}) = {2}".format(old_r, old_v, calculated_M_c))
+            keys_sorted = sorted(r_v2_Mc_dict[old_r].keys())
+
+            idx = bisect(keys_sorted, v2)
+            if idx != 0 and idx != len(keys_sorted):
+                if (keys_sorted[idx] - keys_sorted[idx - 1]) < 0.05:
+                    #not adding if the map is already pretty rich in this area
+                    return
+            print("Adding new M_c value. M_c({0}, {1}^2) = {2}".format(old_r, old_v, calculated_M_c))
             r_v2_Mc_dict[old_r][v2] = calculated_M_c
 
 
@@ -185,6 +190,7 @@ A = 2.67330284184616
 B = 0.855051077339845
 
 crash_angle = 59.5
+crash_angle_buffer = 1
 largest_encountered_angle = 0
 
 r_v2_Mc_dict = dict()
@@ -221,7 +227,7 @@ def is_safe_state(car_state):
     :type car_state: CarState
     """
     tick_count = 4
-    safe = abs(car_state.slip_angle) < crash_angle
+    safe = abs(car_state.slip_angle) < max(crash_angle - crash_angle_buffer, 0)
     #safe_future = abs(car_state.slip_angle + car_state.angle_velocity * tick_count) < crash_angle
     safe_future = True
     return safe and safe_future
@@ -350,17 +356,13 @@ def estimate_M_c(v, r):
             keys = sorted(r_v2_Mc_dict[r].keys())
             idx = bisect(keys, v2)
             if idx == 0:
-                #FIXME we want to extrapolate down
                 print('M_c low')
                 lo = keys[0]
                 hi = keys[1]
-                return r_v2_Mc_dict[r][keys[0]]
             elif idx == len(keys):
-                #FIXME we want to extrapolate up
                 print('M_c high')
                 hi = keys[-1]
                 lo = keys[-2]
-                return r_v2_Mc_dict[r][keys[-1]]
             else:
                 #middle
                 print('M_c mid')
