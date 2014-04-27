@@ -184,7 +184,7 @@ zeta = 0.1  # dampening coefficient
 A = 2.67330284184616
 B = 0.855051077339845
 
-crash_angle = 58
+crash_angle = 59.5
 largest_encountered_angle = 0
 
 r_v2_Mc_dict = dict()
@@ -196,6 +196,7 @@ def adjust_crash_angle():
     """
     global crash_angle, largest_encountered_angle
     crash_angle = largest_encountered_angle
+    print("reducing crash angle to{0}".format(crash_angle))
 
 def calculate_drag_coefficient(v1, v2):
     """
@@ -351,10 +352,14 @@ def estimate_M_c(v, r):
             if idx == 0:
                 #FIXME we want to extrapolate down
                 print('M_c low')
+                lo = keys[0]
+                hi = keys[1]
                 return r_v2_Mc_dict[r][keys[0]]
             elif idx == len(keys):
                 #FIXME we want to extrapolate up
                 print('M_c high')
+                hi = keys[-1]
+                lo = keys[-2]
                 return r_v2_Mc_dict[r][keys[-1]]
             else:
                 #middle
@@ -362,11 +367,13 @@ def estimate_M_c(v, r):
                 lo = keys[idx - 1]
                 hi = keys[idx]
 
-                prop = (v2 - lo) / (hi - lo)
+            lo_val = r_v2_Mc_dict[r][lo]
+            hi_val = r_v2_Mc_dict[r][hi]
+            steepness = (hi_val - lo_val) / (hi - lo)
+            extrapolated = lo_val + steepness * (v2 - lo)
+            extrapolated_safe = max(extrapolated, 0.0)
+            return extrapolated_safe
 
-                lo_val = r_v2_Mc_dict[r][lo]
-                hi_val = r_v2_Mc_dict[r][hi]
-                return lo_val + prop * (hi_val - lo_val)
 
     ret = max(0, v * v / r * A - B)
 
