@@ -77,6 +77,15 @@ class CarState(object):
     VaoMs = namedtuple('VaoMs', 'velocity alpha omega M straight')
 
     def on_car_position(self, car_data, new_tick, my_car):
+        if not new_tick:
+            self. slip_angle = car_data['angle']
+            self.piece_position = car_data['piecePosition']
+            self.start_lane_index = self.piece_position['lane']['startLaneIndex']
+            self.end_lane_index = self.piece_position['lane']['endLaneIndex']
+            self.track_piece_index = self.piece_position['pieceIndex']
+            self.in_piece_distance = self.piece_position['inPieceDistance']
+            return
+
         #FIXME this is a mess
         new_slip_angle = car_data['angle']
         new_angle_velocity = new_slip_angle - self.slip_angle

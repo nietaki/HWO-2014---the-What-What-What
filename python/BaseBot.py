@@ -39,11 +39,11 @@ class BaseBot(object):
         return self.msg("join", {"name": self.name,
                                  "key": self.key})
 
-    def join_track(self, track_name):
+    def join_track(self, track_name, car_count=1):
         bot_id = {"name": self.name, "key": self.key}
         return self.msg('joinRace', {"botId": bot_id,
                                      'trackName': track_name,
-                                     'carCount': 1})
+                                     'carCount': car_count})
 
     def throttle(self, throttle):
         self.cars[self.car_color].set_throttle(throttle)
@@ -62,12 +62,12 @@ class BaseBot(object):
     #    self.join()
     #    self.msg_loop()
 
-    def run(self, track_name = None):
+    def run(self, track_name=None, car_count=1):
         try:
             if not track_name:
                 self.join()
             else:
-                self.join_track(track_name)
+                self.join_track(track_name, car_count)
             self.msg_loop()
         except(KeyboardInterrupt, SystemExit):
             self.save_csv()
