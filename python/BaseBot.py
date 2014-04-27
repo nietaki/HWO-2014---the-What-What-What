@@ -4,7 +4,7 @@ import os
 import socket
 import sys
 from Track import Track
-from physics import CarState
+import physics
 import csv_handler
 import datetime
 
@@ -40,8 +40,11 @@ class BaseBot(object):
         if not tick:
             self.send(json.dumps({"msgType": msg_type, "data": data}))
         else:
-            print("sending msg with gameTick")
+            #print("sending msg with gameTick")
             self.send(json.dumps({"msgType": msg_type, "data": data, "gameTick": tick}))
+
+    def turbo(self, personalized_message):
+        self.msg("turbo", personalized_message)
 
     def send(self, msg):
         self.sock.sendall(msg + "\n")
@@ -109,7 +112,7 @@ class BaseBot(object):
         self.track = Track(race['track'], race['raceSession'])
 
         for car in race['cars']:
-            car_object = CarState(self.track, car)
+            car_object = physics.CarState(self.track, car)
             self.cars[car_object.color] = car_object
         self.on_game_init(data, tick)
 
@@ -153,6 +156,7 @@ class BaseBot(object):
         self.on_crash(data, tick)
 
     def on_crash(self, data, tick):
+        physics.adjust_crash_angle()
         print("BaseBot says: Someone crashed")
 
     def on_spawn_base(self, data, tick):
@@ -197,7 +201,7 @@ class BaseBot(object):
 
     ## other helpers/accessors ##
     def my_car(self):
-        """:rtype: CarState"""
+        """:rtype: physics.CarState"""
         return self.cars[self.car_color]
 
     ## and the LOOP ##

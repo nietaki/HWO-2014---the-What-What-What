@@ -88,6 +88,13 @@ class CarState(object):
 
         #FIXME this is a mess
         new_slip_angle = car_data['angle']
+
+        global largest_encountered_angle, crash_angle
+        #for records
+        largest_encountered_angle = max(largest_encountered_angle, abs(new_slip_angle))
+        #for real
+        crash_angle = max(crash_angle, largest_encountered_angle)
+
         new_angle_velocity = new_slip_angle - self.slip_angle
 
         # old values used for M_c estimation
@@ -117,7 +124,7 @@ class CarState(object):
                                                 new_in_piece_distance, self.lane())
         self.acceleration = (new_velocity - self.velocity)
 
-        if not self.velocity and new_velocity and my_car:
+        if not self.velocity and new_velocity and my_car and self.throttle:
             calculate_engine_power_from_first_tick(new_velocity, self.throttle)
 
         self.velocity = new_velocity
@@ -177,9 +184,18 @@ zeta = 0.1  # dampening coefficient
 A = 2.67330284184616
 B = 0.855051077339845
 
-crash_angle = 57
+crash_angle = 58
+largest_encountered_angle = 0
 
 r_v2_Mc_dict = dict()
+
+def adjust_crash_angle():
+    """
+    if somebody crashes we want to adjust the crash angle to the largest one that did work
+    this mechanism exists in case the default was too large
+    """
+    global crash_angle, largest_encountered_angle
+    crash_angle = largest_encountered_angle
 
 def calculate_drag_coefficient(v1, v2):
     """
@@ -334,15 +350,15 @@ def estimate_M_c(v, r):
             idx = bisect(keys, v2)
             if idx == 0:
                 #FIXME we want to extrapolate down
-                #print('M_c low')
+                print('M_c low')
                 return r_v2_Mc_dict[r][keys[0]]
             elif idx == len(keys):
                 #FIXME we want to extrapolate up
-                #print('M_c high')
+                print('M_c high')
                 return r_v2_Mc_dict[r][keys[-1]]
             else:
                 #middle
-                #print('M_c mid')
+                print('M_c mid')
                 lo = keys[idx - 1]
                 hi = keys[idx]
 
