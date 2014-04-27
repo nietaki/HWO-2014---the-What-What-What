@@ -247,17 +247,18 @@ def is_safe_until(input_car_state, throttle, target_piece_id, target_in_piece_di
     :param target_in_piece_distance:
     :return: modified CarState at the end of the action
     """
-    print("checking if {0} is safe until {1}, distance {2}".format(throttle, target_piece_id, target_in_piece_distance))
+    #print("checking if {0} is safe until {1}, distance {2}".format(throttle, target_piece_id, target_in_piece_distance))
     car_state = copy.copy(input_car_state)
     counter = 0;
     while car_state.track_piece_index != target_piece_id or car_state.in_piece_distance < target_in_piece_distance:
         if not is_safe_state(car_state):
-            print("it is not")
+            #print("it is not")
             return False, car_state
         step(car_state, throttle)
         counter += 1
 
-    print("it IS!, based on {0} ticks".format(counter))
+    print("throttle {0} seems to be safe until {1}, distance {2} - based on {3} ticks".format(throttle, target_piece_id, target_in_piece_distance, counter))
+    #print("it IS!, based on {0} ticks".format(counter))
     return True, car_state
 
 
@@ -356,16 +357,16 @@ def estimate_M_c(v, r):
             keys = sorted(r_v2_Mc_dict[r].keys())
             idx = bisect(keys, v2)
             if idx == 0:
-                print('M_c low')
+                #print('M_c low')
                 lo = keys[0]
                 hi = keys[1]
             elif idx == len(keys):
-                print('M_c high')
+                #print('M_c high')
                 hi = keys[-1]
                 lo = keys[-2]
             else:
                 #middle
-                print('M_c mid')
+                #print('M_c mid')
                 lo = keys[idx - 1]
                 hi = keys[idx]
 

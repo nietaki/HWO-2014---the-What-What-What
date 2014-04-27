@@ -63,7 +63,7 @@ class PhysicsBisector(BaseBot):
 
         if not car.crashed:
             the_until = (car.track_piece_index + self.piece_look_ahead) % car.track.track_piece_count
-            deduced_throttle = my_bisect(0.0, 1.0, 7, lambda t: physics.is_safe_until_simple(car, t, the_until, 0.0))
+            deduced_throttle = my_bisect(0.0, 1.0, 6, lambda t: physics.is_safe_until_simple(car, t, the_until, 0.0))
             print("decided to go on throttle {0} from {1} to {2}".format(deduced_throttle, car.track_piece_index, the_until))
             self.throttle(deduced_throttle, tick)
         else:
