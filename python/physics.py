@@ -69,6 +69,9 @@ class CarState(object):
         """ relative meaning it always goes >0 on bends """
         return self.track.bend_direction(self.track_piece_index) * self.slip_angle
 
+    def lap_pieceId_inPieceDistance_tuple(self):
+        return (self.lap, self.track_piece_index, self.in_piece_distance)
+
     def lane(self):
         if self.current_track_piece().is_straight or self.start_lane_index == self.end_lane_index:
             return self.end_lane_index

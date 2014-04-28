@@ -41,6 +41,10 @@ class BaseBot(object):
         # race session
         self.race_session = None
 
+        # car positions
+        self.car_order = []
+        self.my_car_position = 0
+
     ## message handlers and senders ##
     def msg(self, msg_type, data, tick=None):
         if not tick:
@@ -176,11 +180,25 @@ class BaseBot(object):
         if not new_tick:
             new_tick = 0
         self.car_positions_received_time = datetime.datetime.now()
+
+        colors = []
+
         for car_data in data:
             color = car_data['id']['color']
+            colors.append(color)
             self.cars[color].on_car_position(car_data, new_tick, color == self.car_color)
 
+        position_tuples = map(lambda c: self.cars[color].lap_pieceId_inPieceDistance_tuple(), colors)
 
+        c_pt = zip(colors, position_tuples)
+
+        c_pt_sorted = sorted(c_pt, key=lambda c_t: c_t[1])
+
+        self.car_order = map(lambda x: x[0], c_pt_sorted)
+        self.my_car_position = self.car_order.index(self.car_color)
+
+        print(self.car_order)
+        print(self.my_car_position)
 
         if self.csv_filename:
             self.lines.append(csv_handler.csv_row(self.my_car()))
