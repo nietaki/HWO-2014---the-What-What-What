@@ -131,7 +131,19 @@ class Cruiser(BaseBot):
             if car.current_track_piece().is_straight:
                 #FIXME: it's a rough estimation:
                 next_macro_target_speed = physics.estimate_safe_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
-                breaking_distance = physics.distance_to_break(car.velocity, next_macro_target_speed)
+
+                # simulating the car braking to the safe speed
+                car_at_next_macro = physics.simulate_straight_with_breaking_to_speed(car, distance_until_next_macro, next_macro_target_speed)
+
+                # end of the simulation with annealing
+                macro_plus_1 = (macro_index + 1) % len(self.track.reverse_macro_map)
+                # getting the best speed for the bend
+                deduced_speed = physics.estimate_optimal_speed_at_bend_with_annealing(car_at_next_macro,
+                                                                                      car.track.reverse_macro_map[macro_plus_1],
+                                                                                      True)
+
+                # planning the breaking, now with better values
+                breaking_distance = physics.distance_to_break(car.velocity, max(deduced_speed, next_macro_target_speed))
                 if breaking_distance + physics.velocity_and_distance_step(car.velocity, 1.0)[1] < distance_until_next_macro:
                     self.throttle(1.0, tick)
                 else:

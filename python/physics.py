@@ -447,7 +447,7 @@ def estimate_stable_speed_at_angle(true_radius, max_angle):
     v_max = max_velocity()
     return my_bisect(v_max / 10, v_max, 7, ret)
 
-def estimate_optimal_speed_at_bend_with_annealing(input_car, until_track_piece):
+def estimate_optimal_speed_at_bend_with_annealing(input_car, until_track_piece, overwrite_car_speed=False):
     max_v = max_velocity()
     min_v = max_v / 10
 
@@ -455,6 +455,8 @@ def estimate_optimal_speed_at_bend_with_annealing(input_car, until_track_piece):
 
     def do_simulate_with_speed(v):
         car = copy.copy(input_car)
+        if overwrite_car_speed:
+            car.velocity = v
         while car.track_piece_index != until_track_piece:
             t = throttle_to_reach_velocity(car.velocity, v)
             step(car, t)
