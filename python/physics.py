@@ -165,7 +165,7 @@ class CarState(object):
         self.in_piece_distance = new_in_piece_distance
 
         if my_car:
-            if abs(self.velocity - predicted_velocity) < 1e-6:
+            if abs(self.velocity - predicted_velocity) < 1e-6 and not(was_switching or self.is_switching()):
                 ### STRAIGHTENING_FORCES ###
                 t = self.VaoMs(self.velocity, self.slip_angle, self.angle_velocity, self.angle_acceleration,
                                self.track.track_pieces[self.track_piece_index].is_straight)
@@ -250,6 +250,8 @@ B = 0.855051077339845
 crash_angle = 60.0
 crash_angle_buffer = 2
 largest_encountered_angle = 0
+
+safe_speed = 3.5
 
 def crash_angle_buffered():
     return max(0, crash_angle - crash_angle_buffer)
@@ -488,11 +490,18 @@ def estimate_stable_speed_at_angle(true_radius, max_angle):
     v_max = max_velocity()
     return my_bisect(v_max / 10, v_max, 7, ret)
 
+def check_with_annealing(input_car):
+    car = copy.copy(input_car)
+
+    while car.velocity > 2.0:
+        step(car, 0.0)
+        if not is_safe_state(car):
+            return False
+    return True
+
 def estimate_optimal_speed_at_bend_with_annealing(input_car, until_track_piece, overwrite_car_speed=False):
     max_v = max_velocity()
     min_v = max_v / 10
-
-    safe_speed = 3.5
 
     def do_simulate_with_speed(v):
         car = copy.copy(input_car)
@@ -505,7 +514,7 @@ def estimate_optimal_speed_at_bend_with_annealing(input_car, until_track_piece, 
                 return False
 
         # we're out of the bend, now annealing
-        while car.velocity > safe_speed:  # FIXME: get the final velocity in a smarter way
+        while car.velocity > safe_speed:
             step(car, 0.0)
             if not is_safe_state(car):
                 return False
