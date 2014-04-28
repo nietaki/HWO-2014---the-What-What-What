@@ -209,7 +209,13 @@ class CarState(object):
                 if (math.sqrt(keys_sorted[idx]) - math.sqrt(keys_sorted[idx - 1])) < 0.05:
                     #not adding if the map is already pretty rich in this area
                     return
-
+            # double checking the values
+            if idx > 0 and r_v2_Mc_dict[old_r][keys_sorted[idx-1]] > calculated_M_c:
+                print("NOT ADDING A TOO SMALL M_C")
+                return
+            if idx < len(keys_sorted) and r_v2_Mc_dict[old_r][keys_sorted[idx]] <= calculated_M_c:
+                print("NOT ADDING A TOO LARGE M_C")
+                return
             print("Adding new M_c value. M_c({0}, {1}^2) = {2}".format(old_r, old_v, calculated_M_c))
             r_v2_Mc_dict[old_r][v2] = calculated_M_c
 
@@ -235,7 +241,7 @@ A = 2.67330284184616
 B = 0.855051077339845
 
 crash_angle = 60.0
-crash_angle_buffer = 1
+crash_angle_buffer = 2
 largest_encountered_angle = 0
 
 def crash_angle_buffered():
