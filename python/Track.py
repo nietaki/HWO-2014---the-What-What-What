@@ -33,6 +33,12 @@ class Track(object):
     def radius(self, piece_index):
         return self.track_pieces[piece_index].radius
 
+    def next_index(self, input_track_piece_index):
+        return (input_track_piece_index + 1) % self.track_piece_count
+
+    def next_piece(self, input_track_piece_index):
+        return self.track_pieces[self.next_index(input_track_piece_index)]
+
     def piece_straight(self, piece_index):
         return self.track_pieces[piece_index].is_straight
 

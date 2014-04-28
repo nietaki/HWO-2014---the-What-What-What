@@ -150,74 +150,80 @@ class CarState(object):
                                                 new_track_piece_index,
                                                 new_in_piece_distance, self.lane())
         self.acceleration = (new_velocity - self.velocity)
+        if my_car:
+            if  not e_was_calculated and not self.velocity and new_velocity and self.throttle:
+                calculate_engine_power_from_first_tick(new_velocity, self.throttle)
 
-        if not e_was_calculated and not self.velocity and new_velocity and my_car and self.throttle:
-            calculate_engine_power_from_first_tick(new_velocity, self.throttle)
+            if not d_was_calculated and self.velocity > 1.0 and new_velocity > 1.0:
+                calculate_drag(self.velocity, new_velocity, self.throttle)
 
-        if not d_was_calculated and self.velocity > 1.0 and new_velocity > 1.0:
-            calculate_drag(self.velocity, new_velocity, self.throttle)
-
+        predicted_velocity, predicted_distance = velocity_and_distance_step(self.velocity, self.throttle)
         self.velocity = new_velocity
+
 
         self.track_piece_index = new_track_piece_index
         self.in_piece_distance = new_in_piece_distance
 
-        ### STRAIGHTENING_FORCES ###
-        t = self.VaoMs(self.velocity, self.slip_angle, self.angle_velocity, self.angle_acceleration,
-                       self.track.track_pieces[self.track_piece_index].is_straight)
-        self.vaoMsq.append(t)
-        while len(self.vaoMsq) > 3:
-            self.vaoMsq.popleft()
 
-        if len(self.vaoMsq) == 3:
-            #                      straight                                      alpha != 0
-            if all(map(lambda tup: tup.straight, self.vaoMsq)) and all(map(lambda tup: tup.alpha != 0, self.vaoMsq)):
-                v0 = self.vaoMsq[0].velocity
-                alpha0 = self.vaoMsq[0].alpha
-                omega0 = self.vaoMsq[0].omega
-                M0 = self.vaoMsq[1].M
-                v1 = self.vaoMsq[1].velocity
-                alpha1 = self.vaoMsq[1].alpha
-                omega1 = self.vaoMsq[1].omega
-                M1 = self.vaoMsq[2].M
-                estimate_p_and_zeta(v0, alpha0, omega0, M0, v1, alpha1, omega1, M1)
+        if my_car and abs(self.velocity - predicted_velocity) < 1e-6:
+            ### STRAIGHTENING_FORCES ###
+            t = self.VaoMs(self.velocity, self.slip_angle, self.angle_velocity, self.angle_acceleration,
+                           self.track.track_pieces[self.track_piece_index].is_straight)
+            self.vaoMsq.append(t)
+            while len(self.vaoMsq) > 3:
+                self.vaoMsq.popleft()
 
-        ### end STRAIGHTENING_FORCES ###
+            if len(self.vaoMsq) == 3:
+                #                      straight                                      alpha != 0
+                if all(map(lambda tup: tup.straight, self.vaoMsq)) and all(map(lambda tup: tup.alpha != 0, self.vaoMsq)):
+                    v0 = self.vaoMsq[0].velocity
+                    alpha0 = self.vaoMsq[0].alpha
+                    omega0 = self.vaoMsq[0].omega
+                    M0 = self.vaoMsq[1].M
+                    v1 = self.vaoMsq[1].velocity
+                    alpha1 = self.vaoMsq[1].alpha
+                    omega1 = self.vaoMsq[1].omega
+                    M1 = self.vaoMsq[2].M
+                    estimate_p_and_zeta(v0, alpha0, omega0, M0, v1, alpha1, omega1, M1)
 
-        ### centrifugal_forces ###
-        if p_and_zeta_estimated and not was_switching and old_v and not self.crashed and not old_r > 10000:
-            #we need p and zeta to do this
-            global r_v2_Mc_dict
+            ### end STRAIGHTENING_FORCES ###
 
-            if old_r not in r_v2_Mc_dict:
-                r_v2_Mc_dict[old_r] = dict()
-                #some starting values to make sure we don't have to add zero values
-                r_v2_Mc_dict[old_r][0.01] = 0.0
-                r_v2_Mc_dict[old_r][0.02] = 0.0
+            ### centrifugal_forces ###
+            if p_and_zeta_estimated and not was_switching and old_v and not self.crashed and not old_r > 10000:
+                #we need p and zeta to do this
+                global r_v2_Mc_dict
 
-            calculated_M_c = abs(calculate_M_c(old_v, alpha, omega, self.angle_acceleration))
+                if old_r not in r_v2_Mc_dict:
+                    r_v2_Mc_dict[old_r] = dict()
+                    #some starting values to make sure we don't have to add zero values
+                    r_v2_Mc_dict[old_r][0.01] = 0.0
+                    r_v2_Mc_dict[old_r][0.02] = 0.0
 
-            if calculated_M_c < 0.0001:
-                #this is practically zero, we don't need that
-                return
+                calculated_M_c = abs(calculate_M_c(old_v, alpha, omega, self.angle_acceleration))
 
-            v2 = old_v * old_v
-            keys_sorted = sorted(r_v2_Mc_dict[old_r].keys())
-
-            idx = bisect.bisect(keys_sorted, v2)
-            if idx != 0 and idx != len(keys_sorted):
-                if (math.sqrt(keys_sorted[idx]) - math.sqrt(keys_sorted[idx - 1])) < 0.05:
-                    #not adding if the map is already pretty rich in this area
+                if calculated_M_c < 0.0001:
+                    #this is practically zero, we don't need that
                     return
-            # double checking the values
-            if idx > 0 and r_v2_Mc_dict[old_r][keys_sorted[idx-1]] > calculated_M_c:
-                print("NOT ADDING A TOO SMALL M_C")
-                return
-            if idx < len(keys_sorted) and r_v2_Mc_dict[old_r][keys_sorted[idx]] <= calculated_M_c:
-                print("NOT ADDING A TOO LARGE M_C")
-                return
-            print("Adding new M_c value. M_c({0}, {1}^2) = {2}".format(old_r, old_v, calculated_M_c))
-            r_v2_Mc_dict[old_r][v2] = calculated_M_c
+
+                v2 = old_v * old_v
+                keys_sorted = sorted(r_v2_Mc_dict[old_r].keys())
+
+                idx = bisect.bisect(keys_sorted, v2)
+                if idx != 0 and idx != len(keys_sorted):
+                    if (math.sqrt(keys_sorted[idx]) - math.sqrt(keys_sorted[idx - 1])) < 0.05:
+                        #not adding if the map is already pretty rich in this area
+                        return
+                # double checking the values
+                if idx > 0 and r_v2_Mc_dict[old_r][keys_sorted[idx-1]] > calculated_M_c:
+                    print("NOT ADDING A TOO SMALL M_C")
+                    return
+                if idx < len(keys_sorted) and r_v2_Mc_dict[old_r][keys_sorted[idx]] <= calculated_M_c:
+                    print("NOT ADDING A TOO LARGE M_C")
+                    return
+                print("Adding new M_c value. M_c({0}, {1}^2) = {2}".format(old_r, old_v, calculated_M_c))
+                r_v2_Mc_dict[old_r][v2] = calculated_M_c
+        else:
+            print("we been bumped, not calculating anything related to sideways forces")
 
 
 # the actual physics

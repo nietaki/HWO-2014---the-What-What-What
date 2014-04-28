@@ -45,6 +45,8 @@ class BaseBot(object):
         self.car_order = []
         self.my_car_position = 0
 
+        self.switch_initiated = False
+
     ## message handlers and senders ##
     def msg(self, msg_type, data, tick=None):
         if not tick:
@@ -92,6 +94,7 @@ class BaseBot(object):
 
 
     def switch_lane(self, direction_string, tick=None):
+        self.switch_initiated = True
         self.msg('switchLane', direction_string, tick)
         print('sent switchLane')
 
@@ -104,8 +107,10 @@ class BaseBot(object):
     #    self.join()
     #    self.msg_loop()
 
-    def run(self, track_name=None, car_count=1):
+    def run(self, track_name=None, car_count=1, password=None):
         try:
+            if password:
+                self.join_track_count_password(track_name, car_count, password)
             if not track_name:
                 self.join()
             else:
@@ -194,6 +199,9 @@ class BaseBot(object):
             color = car_data['id']['color']
             colors.append(color)
             self.cars[color].on_car_position(car_data, new_tick, color == self.car_color)
+
+        if self.my_car().is_switching():
+            self.switch_initiated = False
 
         position_tuples = map(lambda c: self.cars[color].lap_pieceId_inPieceDistance_tuple(), colors)
 

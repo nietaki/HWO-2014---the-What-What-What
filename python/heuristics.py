@@ -113,10 +113,9 @@ class Cruiser(BaseBot):
 
     def on_car_positions(self, data, tick):
         car = self.my_car()
+        cur_index = car.track_piece_index
 
-        #thinking about switching
-        if not car.is_switching(): #TODO add switch decided to BaseBot
-            0 == 0
+
 
         if not car.crashed:
             cur_index = self.my_car().track_piece_index
@@ -132,8 +131,12 @@ class Cruiser(BaseBot):
             next_macro_radius = next_macro_beginning_piece.true_radius(lane)
             next_macro_target_speed = physics.estimate_stable_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
 
-            if car.current_track_piece().is_straight:
+            ##thinking about switching
+            #if not car.is_switching() and not self.switch_initiated and self.track.next_piece(cur_index).switch:
+            #    dirs = car.possible_lane_switch_directions()
+            #    self.switch_lane_int( tick)
 
+            if car.current_track_piece().is_straight:
                 should_run_like_hell = ((self.is_race() and \
                                          car.lap == self.lap_count() - 1) or \
                                         (not self.is_race() and car.last_crashed_lap != car.lap)) and \
