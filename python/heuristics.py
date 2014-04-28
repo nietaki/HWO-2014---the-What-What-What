@@ -119,24 +119,29 @@ class Cruiser(BaseBot):
             macro_index = self.track.macro_piece_map[cur_index]
             next_macro_beginning = self.track.reverse_macro_map[(macro_index + 1) % len(self.track.reverse_macro_map)]
             lane = car.lane()
+            distance_until_next_macro = car.track.distance_until_index(car.track_piece_index,
+                                                                       car.in_piece_distance,
+                                                                       next_macro_beginning,
+                                                                       lane)
+
             next_macro_beginning_piece = car.track.track_pieces[next_macro_beginning]
             next_macro_radius = next_macro_beginning_piece.true_radius(lane)
             next_macro_target_speed = physics.estimate_stable_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
 
             if car.current_track_piece().is_straight:
+                #FIXME: it's a rough estimation:
                 next_macro_target_speed = physics.estimate_safe_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
-                TODO = physics.distance_to_break(car.velocity, next_macro_target_speed) >= \
-                car.track.distance_until_index(car.track_piece_index,
-                                               car.in_piece_distance,
-                                               next_macro_beginning,
-                                               lane)
+                breaking_distance = physics.distance_to_break(car.velocity, next_macro_target_speed)
+                if breaking_distance + physics.velocity_and_distance_step(car.velocity, 1.0)[1] < distance_until_next_macro:
+                    self.throttle(1.0, tick)
+                else:
+                    self.throttle(0.0, tick)
+
             else:
                 # it's a bend!
-                #FIXME: do the safe ending in a more intelligent way than adding one to the next piece index
-                #FIXME: this is just copied from the other bot, we want velocities, not throttles
                 the_until = (next_macro_beginning + 1) % car.track.track_piece_count
-                deduced_throttle = my_bisect(0.0, 1.0, 6, lambda t: physics.is_safe_until_simple(car, t, the_until, 0.0))
-                self.throttle(deduced_throttle, tick)
+                deduced_speed = physics.estimate_optimal_speed_at_bend_with_annealing(car, the_until)
+                self.throttle(physics.throttle_to_reach_velocity(car.velocity, deduced_speed), tick)
         else:
             self.ping()
 
