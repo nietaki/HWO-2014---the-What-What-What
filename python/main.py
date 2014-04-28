@@ -38,7 +38,7 @@ if __name__ == "__main__":
         #    bot.run("germany")
 
         #bot = PhysicsTester(s, name, key)
-        bot = PhysicsBisector(s, name, key)
+        #bot = PhysicsBisector(s, name, key)
         bot = Cruiser(s, name, key)
         #bot = AdvancedBisector(s, name, key)
         #bot = ConstVelocity(s, name, key)

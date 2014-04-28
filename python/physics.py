@@ -206,7 +206,7 @@ breaking_helper_array = []
 A = 2.67330284184616
 B = 0.855051077339845
 
-crash_angle = 59.5
+crash_angle = 60.0
 crash_angle_buffer = 1
 largest_encountered_angle = 0
 
@@ -323,9 +323,8 @@ def calculate_drag(v1, v2, throttle):
         breaking_helper_array = []
         total_distance = 0.0
         for vd in vd_list:
-            v, d = vd
-            breaking_helper_array.append((v, total_distance))
-            total_distance += d
+            breaking_helper_array.append((vd[0], total_distance))
+            total_distance += vd[1]
         #print(breaking_helper_array)
         #test = distance_to_break(9, 5)
         #print("distance to break from 9 to 5 is {0}".format(test))
@@ -485,7 +484,7 @@ def estimate_M_c(v, r):
             return r_v2_Mc_dict[r][v2]
         if len(r_v2_Mc_dict[r]) >= 2:
             keys = sorted(r_v2_Mc_dict[r].keys())
-            idx = bisect(keys, v2)
+            idx = bisect.bisect(keys, v2)
             if idx == 0:
                 #print('M_c low')
                 lo = keys[0]
