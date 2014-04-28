@@ -365,12 +365,22 @@ def velocity_and_distance_step(v0, throttle):
 
 
 
-def simulate_straight_with_breaking_to_speed(car, target_speed):
+def simulate_straight_with_breaking_to_speed(input_car, straight_length, target_velocity):
     """
-    :type car: CarState
+    :type input_car: CarState
     """
-    #FIXME
+    car = copy.copy(input_car)
+    distance_left = straight_length
+    while distance_left > distance_to_break(input_car.velocity, target_velocity):
+        step(car, 1.0)
+        if not is_safe_state(car):
+            print("CAR NOT SAFE IN STRAIGHT!")
+        distance_left -= car.velocity  # or last tick distance ;)
 
+    while distance_left > car.velocity:  # we don't want to end on the bend itself
+        step(car, 0.0)
+        distance_left -= car.velocity
+    return car
 
 def velocity_after_distance(v0, distance, throttle):
     """
