@@ -311,8 +311,8 @@ def calculate_drag(v1, v2, throttle):
         print("calculated d to be {0}".format(d))
         #tablicujemy odległości do przejechania z prędkości
         vd_list = []
-        v_max = max_velocity()
-        v_min = v_max / 10
+        v_max = max_velocity() * 4
+        v_min = max_velocity() / 10
         v_cur = v_max
         vd_list.append((v_max, 0.0))
         while v_cur > v_min:
@@ -345,7 +345,7 @@ def distance_to_break(v0, target_velocity):
     lower_ending_index = bisect.bisect(breaking_helper_array, (target_velocity, 3.14))
     lower_ending_index = max(0, lower_ending_index - 1)
     bigger_starting_index = bisect.bisect(breaking_helper_array, (v0, 3.14))
-    bigger_starting_index = min(bigger_starting_index, len(breaking_helper_array))
+    bigger_starting_index = min(bigger_starting_index, len(breaking_helper_array) - 1)
     return breaking_helper_array[bigger_starting_index][1] - breaking_helper_array[lower_ending_index][1]
 
 def velocity_after_time(v0, n, throttle):

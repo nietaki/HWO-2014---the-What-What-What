@@ -129,6 +129,20 @@ class Cruiser(BaseBot):
             next_macro_target_speed = physics.estimate_stable_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
 
             if car.current_track_piece().is_straight:
+
+                should_run_like_hell = self.is_race() and \
+                                       car.lap == self.lap_count() - 1 and \
+                                       macro_index == len(self.track.reverse_macro_map) - 1 and \
+                                       car.current_track_piece().is_straight #TODO fix for qualifications
+                if should_run_like_hell:
+                    print("gotta go fast!")
+                    if self.turbo_available:
+                        self.turbo("it's my last chance at fame and fortune!", tick)
+                    else:
+                        self.throttle(1.0, tick)
+                    return
+
+
                 next_macro_target_speed = physics.estimate_safe_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
 
                 # simulating the car braking to the safe speed

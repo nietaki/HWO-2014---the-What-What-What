@@ -155,6 +155,7 @@ class BaseBot(object):
 
     def turbo(self, personalized_message='Here goes nothing!', tick=None):
         self.turbo_available = False
+        print('sending turbo with message: "{0}"'.format(personalized_message))
         self.msg("turbo", personalized_message, tick)
 
     def is_race(self):
