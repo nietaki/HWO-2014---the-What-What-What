@@ -52,5 +52,4 @@ class TrackPiece(object):
         :type other: TrackPiece
         """
         return  self.radius == other.radius and \
-                self.angle == other.angle and \
-                self.switch == other.switch
+                self.angle == other.angle
