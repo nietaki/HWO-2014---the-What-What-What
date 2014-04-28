@@ -4,9 +4,7 @@ __author__ = 'nietaki'
 from BaseBot import BaseBot
 from alg import *
 import physics
-
-# parę prostych botow i zastanowie się nad wygodna architekturą dla bota
-
+import random
 
 class PhysicsTester(BaseBot):
     def __init__(self, sock, name, key):
@@ -131,10 +129,13 @@ class Cruiser(BaseBot):
             next_macro_radius = next_macro_beginning_piece.true_radius(lane)
             next_macro_target_speed = physics.estimate_stable_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
 
-            ##thinking about switching
+            #thinking about switching
             #if not car.is_switching() and not self.switch_initiated and self.track.next_piece(cur_index).switch:
             #    dirs = car.possible_lane_switch_directions()
-            #    self.switch_lane_int( tick)
+            #    dir = random.choice(dirs)
+            #    print("going to switch lane to in the {0} direction".format(dir))
+            #    self.switch_lane_int(dir, tick)
+            #    return
 
             if car.current_track_piece().is_straight:
                 should_run_like_hell = ((self.is_race() and \

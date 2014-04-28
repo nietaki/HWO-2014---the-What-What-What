@@ -151,10 +151,10 @@ class CarState(object):
                                                 new_in_piece_distance, self.lane())
         self.acceleration = (new_velocity - self.velocity)
         if my_car:
-            if  not e_was_calculated and not self.velocity and new_velocity and self.throttle:
+            if not e_was_calculated and not self.velocity and new_velocity and self.throttle:
                 calculate_engine_power_from_first_tick(new_velocity, self.throttle)
 
-            if not d_was_calculated and self.velocity > 1.0 and new_velocity > 1.0:
+            if e_was_calculated and not d_was_calculated and self.velocity > 1.0 and new_velocity > 1.0:
                 calculate_drag(self.velocity, new_velocity, self.throttle)
 
         predicted_velocity, predicted_distance = velocity_and_distance_step(self.velocity, self.throttle)
@@ -223,6 +223,7 @@ class CarState(object):
                     print("Adding new M_c value. M_c({0}, {1}^2) = {2}".format(old_r, old_v, calculated_M_c))
                     r_v2_Mc_dict[old_r][v2] = calculated_M_c
             else:
+                self.vaoMsq.clear()
                 print("we been bumped, not calculating anything related to sideways forces")
 
 

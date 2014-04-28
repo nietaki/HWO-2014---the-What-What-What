@@ -212,9 +212,9 @@ class BaseBot(object):
         self.car_order = map(lambda x: x[0], c_pt_sorted)
         self.my_car_position = self.car_order.index(self.car_color)
 
-        print(c_pt_sorted)
-        print(self.car_order)
-        print(self.my_car_position)
+        #print(c_pt_sorted)
+        #print(self.car_order)
+        #print(self.my_car_position)
 
         if self.csv_filename:
             self.lines.append(csv_handler.csv_row(self.my_car()))
