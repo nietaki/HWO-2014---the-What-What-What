@@ -50,6 +50,7 @@ class CarState(object):
         self.angle_acceleration = 0.0
 
         self.crashed = False
+        self.lap = 0
 
         self.vaoMsq = deque()
 
@@ -86,6 +87,8 @@ class CarState(object):
             self.track_piece_index = self.piece_position['pieceIndex']
             self.in_piece_distance = self.piece_position['inPieceDistance']
             return
+
+        self.lap = self.piece_position['lap']
 
         #FIXME this is a mess
         new_slip_angle = car_data['angle']
@@ -193,6 +196,8 @@ class CarState(object):
 # initializing with default values
 e = 0.2  # engine power
 e_was_calculated = False
+current_turbo_factor = 1.0
+
 d = 0.02  # drag coefficient
 d_was_calculated = False
 p_and_zeta_estimated = False
@@ -432,8 +437,8 @@ def estimate_safe_speed_at_angle(true_radius, max_angle):
     v_max = max_velocity()
 
     ret = my_bisect(v_max / 10, v_max, 7, check_speed)
-    print("estimated safe speed for {0} to be {1}".format(true_radius, ret))
-    print("whereas stable speed at the same angle is {0}".format(estimate_stable_speed_at_angle(true_radius, max_angle)))
+    #print("estimated safe speed for {0} to be {1}".format(true_radius, ret))
+    #print("whereas stable speed at the same angle is {0}".format(estimate_stable_speed_at_angle(true_radius, max_angle)))
     return ret
 
 
@@ -535,6 +540,10 @@ def estimate_p_and_zeta(v0, alpha0, omega0, M0, v1, alpha1, omega1, M1):
     zeta = pz[1]
     print("estimated p={0}, zeta={1}".format(p, zeta))
     p_and_zeta_estimated = True
+
+def update_current_turbo_factor(factor):
+    global current_turbo_factor
+    current_turbo_factor = factor
 
 def a(throttle):
     return e * throttle

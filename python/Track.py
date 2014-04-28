@@ -6,9 +6,8 @@ from TrackPiece import TrackPiece, straight_line_radius
 
 
 class Track(object):
-    def __init__(self, track, race_session):
+    def __init__(self, track):
         self.track = track
-        self.race_session = race_session
         self.track_id = self.track['id']
         self.track_pieces_deprecated = self.track['pieces']
         self.lanes = self.track['lanes']

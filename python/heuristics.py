@@ -129,7 +129,6 @@ class Cruiser(BaseBot):
             next_macro_target_speed = physics.estimate_stable_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
 
             if car.current_track_piece().is_straight:
-                #FIXME: it's a rough estimation:
                 next_macro_target_speed = physics.estimate_safe_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
 
                 # simulating the car braking to the safe speed

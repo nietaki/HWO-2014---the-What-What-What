@@ -32,6 +32,14 @@ class BaseBot(object):
 
         self.car_positions_received_time = None
 
+        # TURBO
+        self.turbo_available = False
+        self.turbo_factor = 3.0
+        self.turbo_duration = 30
+        self.turbo_active = False
+
+        # race session
+        self.race_session = None
 
     ## message handlers and senders ##
     def msg(self, msg_type, data, tick=None):
@@ -41,8 +49,6 @@ class BaseBot(object):
             #print("sending msg with gameTick")
             self.send(json.dumps({"msgType": msg_type, "data": data, "gameTick": tick}))
 
-    def turbo(self, personalized_message='Here goes nothing!'):
-        self.msg("turbo", personalized_message)
 
     def send(self, msg):
         self.sock.sendall(msg + "\n")
@@ -102,8 +108,8 @@ class BaseBot(object):
 
     def on_game_init_base(self, data, tick):
         race = data['race']
-        self.track = Track(race['track'], race['raceSession'])
-
+        self.track = Track(race['track'])
+        self.race_session = race['raceSession']
         for car in race['cars']:
             car_object = physics.CarState(self.track, car)
             self.cars[car_object.color] = car_object
@@ -118,6 +124,44 @@ class BaseBot(object):
     def on_game_start(self, data, tick):
         print("BaseBot says: Race started")
         self.throttle(1.0)
+
+    def on_turbo_available_base(self, data, tick):
+        if not self.my_car().crashed:
+            self.turbo_available = True
+            self.turbo_duration = data['turboDurationTicks']
+            self.turbo_factor= data['turboFactor']
+        self.on_turbo_available(data, tick)
+
+    def on_turbo_available(self, data, tick):
+        print("BaseBot says: turboAvailable")
+
+    def on_turbo_start_base(self, data, tick):
+        self.on_turbo_start(data, tick)
+
+    def on_turbo_start(self, data, tick):
+        if data['color'] == self.car_color:
+            physics.update_current_turbo_factor(self.turbo_factor)
+            self.turbo_active = True
+        print("BaseBot says: turboStart")
+
+    def on_turbo_end_base(self, data, tick):
+        if data['color'] == self.car_color:
+            physics.update_current_turbo_factor(1.0)
+            self.turbo_active = False
+        self.on_turbo_end(data, tick)
+
+    def on_turbo_end(self, data, tick):
+        print("BaseBot says: turboEnd")
+
+    def turbo(self, personalized_message='Here goes nothing!', tick=None):
+        self.turbo_available = False
+        self.msg("turbo", personalized_message, tick)
+
+    def is_race(self):
+        return 'laps' in self.race_session
+
+    def lap_count(self):
+        return self.race_session.get('laps', None)
 
     def on_car_positions_base(self, data, new_tick):
         if not new_tick:
@@ -213,6 +257,9 @@ class BaseBot(object):
             'dnf': self.on_dnf_base,
             'gameEnd': self.on_game_end_base,
             'error': self.on_error_base,
+            'turboAvailable': self.on_turbo_available_base,
+            'turboStart': self.on_turbo_start_base,
+            'turboEnd': self.on_turbo_end_base,
         }
         socket_file = self.sock.makefile()
         line = socket_file.readline()
