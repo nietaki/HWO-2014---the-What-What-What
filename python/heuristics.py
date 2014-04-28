@@ -114,6 +114,8 @@ class Cruiser(BaseBot):
     def on_car_positions(self, data, tick):
         car = self.my_car()
 
+        #thinking about
+
         if not car.crashed:
             cur_index = self.my_car().track_piece_index
             macro_index = self.track.macro_piece_map[cur_index]

@@ -83,9 +83,17 @@ class BaseBot(object):
 
         print("sent throttle={0} for tick {1} after {2} milliseconds".format(throttle, tick, time_delta))
 
+    def switch_lane_int(self, direction, tick=None):
+        if direction > 0:
+            direction_string = "Right"
+        else:
+            direction_string = "Left"
 
-    def switch_lane(self, direction_string):
-        self.msg('switchLane', direction_string)
+        self.switch_lane(direction_string, tick)
+
+
+    def switch_lane(self, direction_string, tick=None):
+        self.msg('switchLane', direction_string, tick)
         print('sent switchLane')
 
     #TODO self.switch_lane({-1, 1})
