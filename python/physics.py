@@ -38,7 +38,6 @@ class CarState(object):
         self.acceleration = 0.0
 
         #from gameInit
-        self.lanes = None
         self.car_dimensions = None
         self.race_session = None
 
@@ -71,6 +70,18 @@ class CarState(object):
 
     def lap_pieceId_inPieceDistance_tuple(self):
         return (self.lap, self.track_piece_index, self.in_piece_distance)
+
+    def possible_lane_switch_directions(self):
+        if self.is_switching():
+            return []
+        else:
+            ret = []
+            if self.lane():
+                ret.append(-1)
+
+            if self.lane() != len(self.track.lanes) - 1:
+                ret.append(1)
+            return ret
 
     def lane(self):
         if self.current_track_piece().is_straight or self.start_lane_index == self.end_lane_index:

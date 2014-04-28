@@ -88,7 +88,6 @@ class BaseBot(object):
             direction_string = "Right"
         else:
             direction_string = "Left"
-
         self.switch_lane(direction_string, tick)
 
 
@@ -205,6 +204,7 @@ class BaseBot(object):
         self.car_order = map(lambda x: x[0], c_pt_sorted)
         self.my_car_position = self.car_order.index(self.car_color)
 
+        print(c_pt_sorted)
         print(self.car_order)
         print(self.my_car_position)
 
