@@ -203,7 +203,7 @@ class BaseBot(object):
         if self.my_car().is_switching():
             self.switch_initiated = False
 
-        position_tuples = map(lambda c: self.cars[color].lap_pieceId_inPieceDistance_tuple(), colors)
+        position_tuples = map(lambda c: self.cars[c].lap_pieceId_inPieceDistance_tuple(), colors)
 
         c_pt = zip(colors, position_tuples)
 
