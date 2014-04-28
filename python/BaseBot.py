@@ -72,8 +72,8 @@ class BaseBot(object):
 
     #TODO self.switch_lane({-1, 1})
 
-    def ping(self):
-        self.msg("ping", {})
+    def ping(self, tick=None):
+        self.msg("ping", {}, tick)
 
     #def run(self):
     #    self.join()

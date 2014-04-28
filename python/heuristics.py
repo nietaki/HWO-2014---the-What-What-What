@@ -143,7 +143,7 @@ class Cruiser(BaseBot):
                 deduced_speed = physics.estimate_optimal_speed_at_bend_with_annealing(car, the_until)
                 self.throttle(physics.throttle_to_reach_velocity(car.velocity, deduced_speed), tick)
         else:
-            self.ping()
+            self.ping(tick)
 
 
 
