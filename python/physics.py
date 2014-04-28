@@ -371,7 +371,7 @@ def simulate_straight_with_breaking_to_speed(input_car, straight_length, target_
     """
     car = copy.copy(input_car)
     distance_left = straight_length
-    while distance_left > distance_to_break(input_car.velocity, target_velocity):
+    while distance_left + velocity_and_distance_step(car.velocity, 1.0)[1] > distance_to_break(input_car.velocity, target_velocity):
         step(car, 1.0)
         if not is_safe_state(car):
             print("CAR NOT SAFE IN STRAIGHT!")
@@ -447,6 +447,30 @@ def estimate_stable_speed_at_angle(true_radius, max_angle):
 
     v_max = max_velocity()
     return my_bisect(v_max / 10, v_max, 7, ret)
+
+def estimate_optimal_speed_at_bend_with_annealing(input_car, until_track_piece):
+    max_v = max_velocity()
+    min_v = max_v / 10
+
+    safe_speed = 3.5
+
+    def do_simulate_with_speed(v):
+        car = copy.copy(input_car)
+        while car.track_piece_index != until_track_piece:
+            t = throttle_to_reach_velocity(car.velocity, v)
+            step(car, t)
+            if not is_safe_state(car):
+                return False
+
+        # we're out of the bend, now annealing
+        while car.velocity > safe_speed:  # FIXME: get the final velocity in a smarter way
+            step(car, 0.0)
+            if not is_safe_state(car):
+                return False
+        return True
+
+    return my_bisect(min_v, max_v, 7, do_simulate_with_speed) #FIXME tune these parameters, add timeout?
+
 
 
 def estimate_M_c(v, r):
