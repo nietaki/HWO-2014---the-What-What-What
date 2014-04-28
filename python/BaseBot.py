@@ -207,7 +207,7 @@ class BaseBot(object):
 
         c_pt = zip(colors, position_tuples)
 
-        c_pt_sorted = sorted(c_pt, key=lambda c_t: c_t[1])
+        c_pt_sorted = reversed(sorted(c_pt, key=lambda c_t: c_t[1]))
 
         self.car_order = map(lambda x: x[0], c_pt_sorted)
         self.my_car_position = self.car_order.index(self.car_color)
