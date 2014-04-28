@@ -130,10 +130,11 @@ class Cruiser(BaseBot):
 
             if car.current_track_piece().is_straight:
 
-                should_run_like_hell = self.is_race() and \
-                                       car.lap == self.lap_count() - 1 and \
-                                       macro_index == len(self.track.reverse_macro_map) - 1 and \
-                                       car.current_track_piece().is_straight #TODO fix for qualifications
+                should_run_like_hell = ((self.is_race() and \
+                                         car.lap == self.lap_count() - 1) or \
+                                        (not self.is_race() and car.last_crashed_lap != car.lap)) and \
+                                         macro_index == len(self.track.reverse_macro_map) - 1 and \
+                                         car.current_track_piece().is_straight #TODO fix for qualifications
                 if should_run_like_hell:
                     print("gotta go fast!")
                     if self.turbo_available:

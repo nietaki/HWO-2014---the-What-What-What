@@ -51,11 +51,13 @@ class CarState(object):
 
         self.crashed = False
         self.lap = 0
+        self.last_crashed_lap = -1
 
         self.vaoMsq = deque()
 
     def crash(self):
         self.crashed = True
+        self.last_crashed_lap = self.lap
 
     def spawn(self):
         self.crashed = False
@@ -68,7 +70,14 @@ class CarState(object):
         return self.track.bend_direction(self.track_piece_index) * self.slip_angle
 
     def lane(self):
-        return self.end_lane_index
+        if self.current_track_piece().is_straight or self.start_lane_index == self.end_lane_index:
+            return self.end_lane_index
+        else:
+            if self.current_track_piece().bend_direction > 0:
+                return max(self.start_lane_index, self.end_lane_index)
+            else:
+                return min(self.start_lane_index, self.end_lane_index)
+
 
     def is_switching(self):
         return self.start_lane_index != self.end_lane_index

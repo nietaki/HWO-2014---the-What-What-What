@@ -57,11 +57,19 @@ class BaseBot(object):
         return self.msg("join", {"name": self.name,
                                  "key": self.key})
 
-    def join_track(self, track_name, car_count=1):
+    def join_track_count(self, track_name, car_count=1):
         bot_id = {"name": self.name, "key": self.key}
         return self.msg('joinRace', {"botId": bot_id,
                                      'trackName': track_name,
                                      'carCount': car_count})
+
+    def join_track_count_password(self, track_name, car_count, password):
+        bot_id = {"name": self.name, "key": self.key}
+        return self.msg('joinRace', {"botId": bot_id,
+                                     'trackName': track_name,
+                                     'carCount': car_count,
+                                     'password': password})
+
 
     def throttle(self, throttle, tick=None):
 
@@ -90,7 +98,7 @@ class BaseBot(object):
             if not track_name:
                 self.join()
             else:
-                self.join_track(track_name, car_count)
+                self.join_track_count(track_name, car_count)
             self.msg_loop()
         except(KeyboardInterrupt, SystemExit):
             self.save_csv()
@@ -171,6 +179,8 @@ class BaseBot(object):
         for car_data in data:
             color = car_data['id']['color']
             self.cars[color].on_car_position(car_data, new_tick, color == self.car_color)
+
+
 
         if self.csv_filename:
             self.lines.append(csv_handler.csv_row(self.my_car()))
