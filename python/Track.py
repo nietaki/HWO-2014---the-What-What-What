@@ -17,17 +17,17 @@ class Track(object):
         # piece id -> macro piece id
         self.macro_piece_map = dict()
         # macro_id -> first normal id
-        self.reverse_piece_map = dict()
+        self.reverse_macro_map = dict()
         self.compute_macro_pieces()
 
     def compute_macro_pieces(self):
         self.macro_piece_map[0] = 0
-        self.reverse_piece_map[0] = 0
+        self.reverse_macro_map[0] = 0
         last_macro_index = 0
         for index in range(1, self.track_piece_count):
             if not self.track_pieces[index].same_as(self.track_pieces[index - 1]):
                 last_macro_index += 1
-                self.reverse_piece_map[last_macro_index] = index
+                self.reverse_macro_map[last_macro_index] = index
             self.macro_piece_map[index] = last_macro_index
         print(self.macro_piece_map)
 

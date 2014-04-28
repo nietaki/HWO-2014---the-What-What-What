@@ -39,12 +39,13 @@ if __name__ == "__main__":
 
         #bot = PhysicsTester(s, name, key)
         bot = PhysicsBisector(s, name, key)
+        #bot = AdvancedBisector(s, name, key)
         #bot = ConstVelocity(s, name, key)
         #bot.target_velocity = 5.9
         #bot.velocity_increase = 0.3
         ##bot.run("germany")
         #bot.run('keimola', 4)
-        bot.run()
+        bot.run('france')
 
         #bot = ThresholdSpeedSearcher(s, name, key)
         #bot.cruising_speed = 2.5

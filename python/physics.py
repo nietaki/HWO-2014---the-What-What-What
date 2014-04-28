@@ -204,6 +204,9 @@ crash_angle = 59.5
 crash_angle_buffer = 1
 largest_encountered_angle = 0
 
+def crash_angle_buffered():
+    return max(0, crash_angle - crash_angle_buffer)
+
 r_v2_Mc_dict = dict()
 
 def adjust_crash_angle():
@@ -238,7 +241,7 @@ def is_safe_state(car_state):
     :type car_state: CarState
     """
     tick_count = 4
-    safe = abs(car_state.slip_angle) < max(crash_angle - crash_angle_buffer, 0)
+    safe = abs(car_state.slip_angle) < crash_angle_buffered()
     #safe_future = abs(car_state.slip_angle + car_state.angle_velocity * tick_count) < crash_angle
     safe_future = True
     return safe and safe_future
@@ -371,12 +374,39 @@ def throttle_to_reach_velocity(v0, v_target):
         return throttle_for_velocity(v_target)
 
 
-def estimate_stable_speed_at_angle(true_radius, angle):
+def estimate_safe_speed_at_angle(true_radius, max_angle):
+    def check_speed(v):
+        #M_C(v, r)
+        #M_p(v, alpha)
+        #M_d(omega)
+        def my_M(v, r, alpha, omega):
+            return estimate_M_c(v, r) + M_p(v, alpha) + M_d(omega)
+
+        alpha = 0
+        omega = my_M(v, true_radius, alpha, 0.0)
+        it = 0
+        while omega > 0.0 and it < 100:
+            alpha += omega
+            omega += my_M(v, true_radius, alpha, omega)
+            if alpha > max_angle:
+                return False
+            it += 1
+        return True
+
+    v_max = max_velocity()
+
+    ret = my_bisect(v_max / 10, v_max, 7, check_speed)
+    print("estimated safe speed for {0} to be {1}".format(true_radius, ret))
+    print("whereas stable speed at the same angle is {0}".format(estimate_stable_speed_at_angle(true_radius, max_angle)))
+    return ret
+
+
+def estimate_stable_speed_at_angle(true_radius, max_angle):
     """
     M_p = M_c
     """
     def ret(v):
-        return abs(M_p(v, angle)) >= estimate_M_c(v, true_radius)
+        return abs(M_p(v, max_angle)) >= estimate_M_c(v, true_radius)
 
     v_max = max_velocity()
     return my_bisect(v_max / 10, v_max, 7, ret)

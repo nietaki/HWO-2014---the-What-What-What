@@ -89,7 +89,6 @@ class BaseBot(object):
                 self.join_track(track_name, car_count)
             self.msg_loop()
         except(KeyboardInterrupt, SystemExit):
-            #print(physics.r_v2_Mc_dict)
             self.save_csv()
             raise
 
@@ -173,6 +172,7 @@ class BaseBot(object):
         print("BaseBot says {0}, wearing {1} DNF: {2}".format(name, color, reason))
 
     def save_csv(self):
+        print(physics.r_v2_Mc_dict)
         with open('debug_output/' + self.csv_filename, 'wb') as f:
             writer = csv.DictWriter(f, csv_handler.csv_keys(self.my_car()))
             writer.writeheader()
