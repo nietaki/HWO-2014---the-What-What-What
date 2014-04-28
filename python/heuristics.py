@@ -107,5 +107,38 @@ class AdvancedBisector(BaseBot):
 
 
 
+class Cruiser(BaseBot):
+    def __init__(self, sock, name, key):
+        super(Cruiser, self).__init__(sock, name, key)
+
+    def on_car_positions(self, data, tick):
+        car = self.my_car()
+
+        if not car.crashed:
+            cur_index = self.my_car().track_piece_index
+            macro_index = self.track.macro_piece_map[cur_index]
+            next_macro_beginning = self.track.reverse_macro_map[(macro_index + 1) % len(self.track.reverse_macro_map)]
+            lane = car.lane()
+            next_macro_beginning_piece = car.track.track_pieces[next_macro_beginning]
+            next_macro_radius = next_macro_beginning_piece.true_radius(lane)
+            next_macro_target_speed = physics.estimate_stable_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
+
+            if car.current_track_piece().is_straight:
+                next_macro_target_speed = physics.estimate_safe_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
+                TODO = physics.distance_to_break(car.velocity, next_macro_target_speed) >= \
+                car.track.distance_until_index(car.track_piece_index,
+                                               car.in_piece_distance,
+                                               next_macro_beginning,
+                                               lane)
+            else:
+                # it's a bend!
+                #FIXME: do the safe ending in a more intelligent way than adding one to the next piece index
+                #FIXME: this is just copied from the other bot, we want velocities, not throttles
+                the_until = (next_macro_beginning + 1) % car.track.track_piece_count
+                deduced_throttle = my_bisect(0.0, 1.0, 6, lambda t: physics.is_safe_until_simple(car, t, the_until, 0.0))
+                self.throttle(deduced_throttle, tick)
+        else:
+            self.ping()
+
 
 

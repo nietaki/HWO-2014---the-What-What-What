@@ -125,8 +125,11 @@ class CarState(object):
                                                 new_in_piece_distance, self.lane())
         self.acceleration = (new_velocity - self.velocity)
 
-        if not self.velocity and new_velocity and my_car and self.throttle:
+        if not e_was_calculated and not self.velocity and new_velocity and my_car and self.throttle:
             calculate_engine_power_from_first_tick(new_velocity, self.throttle)
+
+        if not d_was_calculated and self.velocity > 1.0 and new_velocity > 1.0:
+            calculate_drag(self.velocity, new_velocity, self.throttle)
 
         self.velocity = new_velocity
 
@@ -189,8 +192,9 @@ class CarState(object):
 
 # initializing with default values
 e = 0.2  # engine power
-d_calculation_velocity = 0.1
+e_was_calculated = False
 d = 0.02  # drag coefficient
+d_was_calculated = False
 p_and_zeta_estimated = False
 p = 0.00125  # straightening coefficient
 zeta = 0.1  # dampening coefficient
@@ -218,22 +222,22 @@ def adjust_crash_angle():
     crash_angle = largest_encountered_angle
     print("reducing crash angle to{0}".format(crash_angle))
 
-def calculate_drag_coefficient(v1, v2):
-    """
-    :param v1: float: velocity before one tick of throttle set to 0
-    :param v2: float: velocity after one tick of throttle set to 0
-
-    calculates the d (drag coeff) based on two velocities and
-    v2 = v1 - v1 * d
-    v2 = v1(1 - d)
-    d = 1 - v2/v1
-
-    works better with higher speeds
-    """
-    v2 *= 1.0
-    global d
-    d = 1.0 - (v2 / v1)
-    return d
+#def calculate_drag_coefficient(v1, v2):
+#    """
+#    :param v1: float: velocity before one tick of throttle set to 0
+#    :param v2: float: velocity after one tick of throttle set to 0
+#
+#    calculates the d (drag coeff) based on two velocities and
+#    v2 = v1 - v1 * d
+#    v2 = v1(1 - d)
+#    d = 1 - v2/v1
+#
+#    works better with higher speeds
+#    """
+#    v2 *= 1.0
+#    global d
+#    d = 1.0 - (v2 / v1)
+#    return d
 
 
 def is_safe_state(car_state):
@@ -277,8 +281,9 @@ def is_safe_until(input_car_state, throttle, target_piece_id, target_in_piece_di
 
 
 def calculate_engine_power_from_first_tick(v0, throttle):
-    global e;
+    global e, e_was_calculated;
     e = v0 / throttle
+    e_was_calculated = True
     print("e estimated to be {0}".format(e))
 
 
@@ -289,13 +294,14 @@ def calculate_drag(v1, v2, throttle):
     :param v2: velocity after the throttle tick
     :param throttle: the throttle set
     """
-    global d, d_calculation_velocity
-    if v1 > d_calculation_velocity:
+    global d, d_was_calculated
+    if not d_was_calculated:
         c = v2 - v1
         a = e * throttle
         b = a - c  # b is positive
         d = b / v1
-        d_calculation_velocity = v1
+        d_was_calculated = True
+        print("calculated d to be {0}".format(d))
 
 
 #def calculate_engine_power(v1, v2, throttle):
@@ -343,6 +349,12 @@ def distance_to_break(v0, target_velocity):
         v, new_dist = velocity_and_distance_step(v, 0.0)
         dist += new_dist
     return dist
+
+def simulate_straight_with_breaking_to_speed(car, target_speed):
+    """
+    :type car: CarState
+    """
+    #FIXME
 
 
 def velocity_after_distance(v0, distance, throttle):

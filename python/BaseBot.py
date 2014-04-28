@@ -7,11 +7,9 @@ from Track import Track
 import physics
 import csv_handler
 import datetime
+from alg import millis
 
 
-def millis(t1, t2):
-    td = t2 - t1
-    return round(td.seconds * 1000 + td.microseconds / 1000)
 
 class BaseBot(object):
     def __init__(self, sock, name, key):
