@@ -6,7 +6,7 @@ import copy
 import math
 import numpy as np
 from collections import deque, namedtuple
-from bisect import bisect
+import bisect
 import datetime
 
 class CarState(object):
@@ -178,7 +178,7 @@ class CarState(object):
             v2 = old_v * old_v
             keys_sorted = sorted(r_v2_Mc_dict[old_r].keys())
 
-            idx = bisect(keys_sorted, v2)
+            idx = bisect.bisect(keys_sorted, v2)
             if idx != 0 and idx != len(keys_sorted):
                 if (math.sqrt(keys_sorted[idx]) - math.sqrt(keys_sorted[idx - 1])) < 0.05:
                     #not adding if the map is already pretty rich in this area
@@ -198,6 +198,8 @@ d_was_calculated = False
 p_and_zeta_estimated = False
 p = 0.00125  # straightening coefficient
 zeta = 0.1  # dampening coefficient
+
+breaking_helper_array = []
 
 # now for the centrifugal force
 # M_c = A * V^2 / r - B, where B is non-negative
@@ -302,21 +304,45 @@ def calculate_drag(v1, v2, throttle):
         d = b / v1
         d_was_calculated = True
         print("calculated d to be {0}".format(d))
+        #tablicujemy odległości do przejechania z prędkości
+        vd_list = []
+        v_max = max_velocity()
+        v_min = v_max / 10
+        v_cur = v_max
+        vd_list.append((v_max, 0.0))
+        while v_cur > v_min:
+            v_cur, distance = velocity_and_distance_step(v_cur, 0.0)
+            vd = v_cur, distance
+            vd_list.append(vd)
+
+        #now we have a velocity, distance in last tick list
+        vd_list.reverse()
+        #now from smallest to largest
+
+        global breaking_helper_array
+        breaking_helper_array = []
+        total_distance = 0.0
+        for vd in vd_list:
+            v, d = vd
+            breaking_helper_array.append((v, total_distance))
+            total_distance += d
+        #print(breaking_helper_array)
+        #test = distance_to_break(9, 5)
+        #print("distance to break from 9 to 5 is {0}".format(test))
 
 
-#def calculate_engine_power(v1, v2, throttle):
-#    """
-#    :param v1: float: velocity before one tick of throttle setting
-#    :param v2: float: velocity after one tick of throttle setting
-#    depends on proper drag coefficient. Works better on non-top speeds and non-zero throttle values
-#    """
-#    c = v2 - v1
-#    # c = a - v1 * d
-#    # e * throttle = c + v1 * d
-#    global e, d
-#    e = (c + v1 * d) / throttle
-#    return e
+def distance_to_break(v0, target_velocity):
+    """
+    :returns the distance needed to break to target velocity
+    """
+    if target_velocity > v0:
+        return 0.0
 
+    lower_ending_index = bisect.bisect(breaking_helper_array, (target_velocity, 3.14))
+    lower_ending_index = max(0, lower_ending_index - 1)
+    bigger_starting_index = bisect.bisect(breaking_helper_array, (v0, 3.14))
+    bigger_starting_index = min(bigger_starting_index, len(breaking_helper_array))
+    return breaking_helper_array[bigger_starting_index][1] - breaking_helper_array[lower_ending_index][1]
 
 def velocity_after_time(v0, n, throttle):
     """
@@ -338,17 +364,6 @@ def velocity_and_distance_step(v0, throttle):
     return v1, v0
 
 
-def distance_to_break(v0, target_velocity):
-    """
-    :returns the distance needed to break to target velocity
-    this function works in linear time instead of constant, because I don't have time for mathematics now
-    """
-    dist = 0.0
-    v = v0
-    while v > target_velocity:
-        v, new_dist = velocity_and_distance_step(v, 0.0)
-        dist += new_dist
-    return dist
 
 def simulate_straight_with_breaking_to_speed(car, target_speed):
     """
