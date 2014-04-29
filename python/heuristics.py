@@ -138,8 +138,8 @@ class Cruiser(BaseBot):
             if not car.is_switching() and not self.switch_initiated and self.track.next_piece(cur_index).switch and \
                             len(self.track.lanes) > 1 and car.velocity > physics.safe_speed:
                 print(self.cars)
-                print(map(lambda cr: cr.lane(), self.cars.values()))
-                same_lane = filter(lambda cr: cr.lane() == lane, self.cars.values())
+                print(map(lambda cr: cr.lane(), self.other_cars()))
+                same_lane = filter(lambda cr: cr.lane() == lane, self.other_cars())
                 print(same_lane)
                 max_distance = 150.0
                 print(max_distance)

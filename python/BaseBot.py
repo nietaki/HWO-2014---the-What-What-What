@@ -85,6 +85,9 @@ class BaseBot(object):
 
         print("sent throttle={0} for tick {1} after {2} milliseconds".format(throttle, tick, time_delta))
 
+    def other_cars(self):
+        return filter(lambda cr: cr.color != self.car_color, self.cars.values())
+
     def switch_lane_int(self, direction, tick=None):
         if direction > 0:
             direction_string = "Right"
