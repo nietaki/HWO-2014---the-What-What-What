@@ -45,7 +45,8 @@ if __name__ == "__main__":
         #bot.target_velocity = 5.9
         #bot.velocity_increase = 0.3
         ##bot.run("germany")
-        #bot.run('keimola', 4)
+        #bot.run('keimola', 4, 'foo')
+        #bot.run('germany')
         #bot.run('germany')
         bot.run()
 

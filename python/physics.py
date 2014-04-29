@@ -266,7 +266,7 @@ crash_angle = 60.0
 crash_angle_buffer = 3
 largest_encountered_angle = 0
 
-safe_speed = 3.5
+safe_speed = 3.2
 
 def crash_angle_buffered():
     return max(0, crash_angle - crash_angle_buffer)
@@ -433,7 +433,8 @@ def simulate_straight_with_breaking_to_speed(input_car, straight_length, target_
     car = copy.copy(input_car)
 
     distance_left = straight_length
-    while distance_left + velocity_and_distance_step(car.velocity, 1.0)[1] > distance_to_break(input_car.velocity, target_velocity):
+    new_velocity, added_distance = velocity_and_distance_step(car.velocity, 1.0)
+    while distance_left > distance_to_break(new_velocity, target_velocity) + added_distance:
         step(car, 1.0)
         if not is_safe_state(car):
             print("CAR NOT SAFE IN STRAIGHT!")
@@ -521,7 +522,7 @@ def check_with_annealing(input_car):
 
 def estimate_optimal_speed_at_bend_with_annealing(input_car, until_track_piece, overwrite_car_speed=False):
     max_v = max_velocity()
-    min_v = max_v / 10
+    min_v = safe_speed
 
     def do_simulate_with_speed(v):
         car = copy.copy(input_car)
