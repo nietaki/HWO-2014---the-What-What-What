@@ -137,14 +137,7 @@ class Cruiser(BaseBot):
             # should we consider switching? - is next piece a switch and is it legal now?
             if not car.is_switching() and not self.switch_initiated and self.track.next_piece(cur_index).switch and \
                             len(self.track.lanes) > 1 and car.velocity > physics.safe_speed:
-                print(self.cars)
-                print(map(lambda cr: cr.lane(), self.other_cars()))
-                same_lane = filter(lambda cr: cr.lane() == lane, self.other_cars())
-                print(same_lane)
-                max_distance = 150.0
-                print(max_distance)
-                same_lane_and_close = filter(lambda cr: self.track.is_distance_less_than(cur_index, car.in_piece_distance, cr.track_piece_index, cr.in_piece_distance, lane, max_distance), same_lane)
-                print(same_lane_and_close)
+                same_lane_and_close = self.other_cars_on_lane_within_distance(lane, 150)
                 if len(same_lane_and_close):
                     #there is somebody to go around
 

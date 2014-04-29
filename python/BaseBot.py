@@ -88,6 +88,13 @@ class BaseBot(object):
     def other_cars(self):
         return filter(lambda cr: cr.color != self.car_color, self.cars.values())
 
+    def other_cars_on_lane_within_distance(self, lane, max_distance):
+        car = self.my_car()
+        cur_index = car.track_piece_index
+        same_lane = filter(lambda cr: cr.lane() == lane, self.other_cars())
+        same_lane_and_close = filter(lambda cr: self.track.is_distance_less_than(cur_index, car.in_piece_distance, cr.track_piece_index, cr.in_piece_distance, lane, max_distance), same_lane)
+        return same_lane_and_close
+
     def switch_lane_int(self, direction, tick=None):
         if direction > 0:
             direction_string = "Right"
