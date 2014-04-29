@@ -115,9 +115,10 @@ class Cruiser(BaseBot):
         car = self.my_car()
         cur_index = car.track_piece_index
 
-
-
         if not car.crashed:
+            if self.turbo_available:
+                self.turbo("I need to use the turbo ASAP!", tick)
+                return
             cur_index = self.my_car().track_piece_index
             macro_index = self.track.macro_piece_map[cur_index]
             next_macro_beginning = self.track.reverse_macro_map[(macro_index + 1) % len(self.track.reverse_macro_map)]

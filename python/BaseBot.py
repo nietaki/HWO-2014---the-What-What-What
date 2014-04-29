@@ -153,7 +153,7 @@ class BaseBot(object):
         if not self.my_car().crashed:
             self.turbo_available = True
             self.turbo_duration = data['turboDurationTicks']
-            self.turbo_factor= data['turboFactor']
+            self.turbo_factor = data['turboFactor']
         self.on_turbo_available(data, tick)
 
     def on_turbo_available(self, data, tick):

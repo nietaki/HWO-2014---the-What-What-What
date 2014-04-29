@@ -149,6 +149,11 @@ class CarState(object):
         new_velocity = self.track.distance_diff(self.track_piece_index, self.in_piece_distance,
                                                 new_track_piece_index,
                                                 new_in_piece_distance, self.lane())
+
+        # this is a quick remedy
+        if was_switching and not self.is_switching():
+            new_velocity += lane_switch_additional_distance
+
         self.acceleration = (new_velocity - self.velocity)
         if my_car:
             if not e_was_calculated and not self.velocity and new_velocity and self.throttle:
@@ -224,7 +229,10 @@ class CarState(object):
                     r_v2_Mc_dict[old_r][v2] = calculated_M_c
             else:
                 self.vaoMsq.clear()
-                print("we been bumped, not calculating anything related to sideways forces")
+                if self.is_switching() or was_switching:
+                    print("won't calculate any sideways forces during lane switch!")
+                else:
+                    print("we been bumped, not calculating anything related to sideways forces")
 
 
 # the actual physics
@@ -232,13 +240,20 @@ class CarState(object):
 # initializing with default values
 e = 0.2  # engine power
 e_was_calculated = False
-current_turbo_factor = 1.0
+cur_turbo_multiplier = 1.0
+
+def engine_potential():
+    global e, cur_turbo_multiplier
+    return e * cur_turbo_multiplier
+
 
 d = 0.02  # drag coefficient
 d_was_calculated = False
 p_and_zeta_estimated = False
 p = 0.00125  # straightening coefficient
 zeta = 0.1  # dampening coefficient
+
+lane_switch_additional_distance = 3.5  # more, to be safe
 
 breaking_helper_array = []
 
@@ -248,7 +263,7 @@ A = 2.67330284184616
 B = 0.855051077339845
 
 crash_angle = 60.0
-crash_angle_buffer = 2
+crash_angle_buffer = 3
 largest_encountered_angle = 0
 
 safe_speed = 3.5
@@ -340,9 +355,9 @@ def calculate_drag(v1, v2, throttle):
     :param throttle: the throttle set
     """
     global d, d_was_calculated
-    if not d_was_calculated:
+    if not d_was_calculated and cur_turbo_multiplier == 1.0:
         c = v2 - v1
-        a = e * throttle
+        a = engine_potential() * throttle
         b = a - c  # b is positive
         d = b / v1
         d_was_calculated = True
@@ -393,7 +408,7 @@ def velocity_after_time(v0, n, throttle):
     :param throttle: constant throttle position
     :param v0: starting speed
     """
-    t = e * throttle
+    t = engine_potential() * throttle
     v0 *= 1.0
     return (pow(1.0 - d, n) * (-v0 * d - d * t + t) + (d - 1) * t) / ((d - 1.0) * d)
 
@@ -402,7 +417,7 @@ def velocity_and_distance_step(v0, throttle):
     """
     :returns (new_speed, distance_travelled) after one tick
     """
-    v1 = v0 + (throttle * e - v0 * d)
+    v1 = v0 + (throttle * engine_potential() - v0 * d)
     return v1, v0
 
 
@@ -436,10 +451,10 @@ def velocity_after_distance(v0, distance, throttle):
     return v
 
 def max_velocity():
-    return e / d
+    return engine_potential() / d
 
 def throttle_for_velocity(v):
-    return v * d / e
+    return v * d / engine_potential()
 
 def throttle_to_reach_velocity(v0, v_target):
     """
@@ -447,7 +462,7 @@ def throttle_to_reach_velocity(v0, v_target):
     """
     if v0 > v_target:
         return 0.0
-    elif v0 + e - v0 * d < v_target:
+    elif v0 + engine_potential() - v0 * d < v_target:
         return 1.0
     else:
         return throttle_for_velocity(v_target)
@@ -587,11 +602,11 @@ def estimate_p_and_zeta(v0, alpha0, omega0, M0, v1, alpha1, omega1, M1):
     p_and_zeta_estimated = True
 
 def update_current_turbo_factor(factor):
-    global current_turbo_factor
-    current_turbo_factor = factor
+    global cur_turbo_multiplier
+    cur_turbo_multiplier = factor
 
 def a(throttle):
-    return e * throttle
+    return engine_potential() * throttle
 
 
 def b(v):

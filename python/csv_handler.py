@@ -1,11 +1,12 @@
 __author__ = 'nietaki'
-from physics import M
+import physics
 
 def csv_row(car):
     row = dict()
     row["tick"] = car.tick
     row["car_id"] = car.name
     row["map_id"] = car.track.track_id
+    row["car_turbo_multiplier"] = physics.cur_turbo_multiplier
     row["throttle"] = car.throttle
     row["can_switch"] = int(car.track.track_pieces_deprecated[car.track_piece_index].get('switch', False))
     row["lane_start"] = car.start_lane_index
@@ -15,7 +16,7 @@ def csv_row(car):
     row["slip_angle"] = car.slip_angle
     row["angle_velocity"] = car.angle_velocity
     row["angle_acceleration"] = car.angle_acceleration
-    row["M"] = M(car)
+    row["M"] = physics.M(car)
     row["piece_index"] = car.track_piece_index
     row["lane_radius"] = car.track.true_radius(car.track_piece_index, car.end_lane_index)
     row["in_piece_distance"] = car.in_piece_distance
@@ -28,6 +29,7 @@ def csv_keys(car):
     return ["tick",
             "car_id",
             "map_id",
+            "car_turbo_multiplier",
             "throttle",
             "velocity",
             "acceleration",
