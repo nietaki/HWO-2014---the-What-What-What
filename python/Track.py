@@ -110,6 +110,26 @@ class Track(object):
         else:
             return self.true_piece_length(piece_index_1, lane) - in_piece_distance_1 + in_piece_distance_2
 
+    def is_distance_less_than(self, piece_id_1, in_piece_distance_1, piece_id_2, in_piece_distance_2, lane, distance_limit):
+        if piece_id_1 == piece_id_2:
+            if in_piece_distance_1 <= in_piece_distance_2:
+                return (in_piece_distance_2 - in_piece_distance_1) < distance_limit
+            else:
+                # first is ahead
+                return False
+        else:
+            piece_id_1 != piece_id_2
+            dist = self.track_pieces[piece_id_1].true_length(lane) - in_piece_distance_1
+            cur_id = self.next_index(piece_id_1)
+            while cur_id != piece_id_2:
+                dist += self.track_pieces[cur_id].true_length(lane)
+                if dist > distance_limit:
+                    return False
+                cur_id = self.next_index(cur_id)
+
+            dist += in_piece_distance_2
+            return dist < distance_limit
+
     #starting_index doesn't get taken into account
     def next_bend_id(self, starting_index, less_than_radius=straight_line_radius):
         starting_index %= self.track_piece_count

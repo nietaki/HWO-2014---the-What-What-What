@@ -133,29 +133,35 @@ class Cruiser(BaseBot):
             next_macro_radius = next_macro_beginning_piece.true_radius(lane)
             next_macro_target_speed = physics.estimate_stable_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
 
-            #### SWITCH ###
-            ## thinking about switching
-            ## only if next piece is a switch
-            #if not car.is_switching() and not self.switch_initiated and self.track.next_piece(cur_index).switch and \
-            #                len(self.track.lanes) > 1 and car.velocity > physics.safe_speed:
-            #    #TODO check if there is an opponent close'ish in front
-            #    dirs = car.possible_lane_switch_directions()
-            #    dir = random.choice(dirs)
-            #    car_other_lane = copy.copy(car)
-            #    car_other_lane.start_lane_index += dir
-            #    car_other_lane.end_lane_index += dir
-            #    if physics.check_with_annealing(car_other_lane):
-            #        print("going to switch lane to in the {0} direction".format(dir))
-            #        self.switch_lane_int(dir, tick)
-            #        return
-            #    else:
-            #        print("staying here, switching is not safe!")
+            ### SWITCH ###
+            # should we consider switching? - is next piece a switch and is it legal now?
+            if not car.is_switching() and not self.switch_initiated and self.track.next_piece(cur_index).switch and \
+                            len(self.track.lanes) > 1 and car.velocity > physics.safe_speed:
 
-            #if self.switch_initiated:
-            #    print('reducing speed to be safe')
-            #    self.throttle(0.0, tick)
-            #    return
-            #### end SWITCH ###
+                same_lane = filter(lambda cr: cr.lane == lane, self.cars.values())
+                same_lane_and_close = filter(lambda cr: self.track.is_distance_less_than(cur_index, car.in_piece_distance, cr.track_piece_index, cr.in_piece_distance, lane, 100.0), same_lane)
+                print(same_lane_and_close)
+                if len(same_lane_and_close):
+                    #there is somebody to go around
+
+                    #TODO check if there is an opponent close'ish in front
+                    dirs = car.possible_lane_switch_directions()
+                    dir = random.choice(dirs)
+                    car_other_lane = copy.copy(car)
+                    car_other_lane.start_lane_index += dir
+                    car_other_lane.end_lane_index += dir
+                    if physics.check_with_annealing(car_other_lane):
+                        print("going to switch lane to in the {0} direction".format(dir))
+                        self.switch_lane_int(dir, tick)
+                        return
+                    else:
+                        print("staying here, switching is not safe!")
+
+            if self.switch_initiated:
+                print('reducing speed to be safe')
+                self.throttle(0.0, tick)
+                return
+            ### end SWITCH ###
 
             if car.current_track_piece().is_straight:
                 # straight!

@@ -4,6 +4,7 @@ import sys
 from NoobBot import NoobBot
 from investigation import *
 from heuristics import *
+import threading
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
@@ -14,6 +15,8 @@ if __name__ == "__main__":
         print("host={0}, port={1}, bot name={2}, key={3}".format(*sys.argv[1:5]))
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, int(port)))
+
+
         #bot = NoobBot(s, name, key)
         #bot = KeimolaBreaker(s, name, key)
         #bot = KeimolaAccelerator(s, name, key)
@@ -39,7 +42,6 @@ if __name__ == "__main__":
 
         #bot = PhysicsTester(s, name, key)
         #bot = PhysicsBisector(s, name, key)
-        bot = Cruiser(s, name, key)
         #bot = AdvancedBisector(s, name, key)
         #bot = ConstVelocity(s, name, key)
         #bot.target_velocity = 5.9
@@ -48,8 +50,21 @@ if __name__ == "__main__":
         #bot.run('keimola', 4, 'foo')
         #bot.run('germany')
         #bot.run('germany')
-        bot.run()
 
+        #password = 'ntk0'
+        #bot_count = 3
+
+        #if name == 'noob1':
+        #    bot = ConstThrottle(s, name, key)
+        #    bot.run('keimola', bot_count, password)
+        #elif name == 'noob2':
+        #    bot = ConstThrottle(s, name, key)
+        #    bot.run('keimola', bot_count, password)
+        #else:
+        #    bot = Cruiser(s, name, key)
+        #    bot.run('keimola', bot_count, password)
+        bot = Cruiser(s, name, key)
+        bot.run()
         #bot = ThresholdSpeedSearcher(s, name, key)
         #bot.cruising_speed = 2.5
         #bot.targeted_radius = 60
