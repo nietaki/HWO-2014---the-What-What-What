@@ -13,11 +13,15 @@ class Track(object):
         self.lanes = self.track['lanes']
         self.track_pieces = map(lambda pc: TrackPiece(pc, self.lanes), self.track_pieces_deprecated)
         self.track_piece_count = len(self.track_pieces_deprecated)
+
+        self.index_of_the_beginning_of_the_longest_straight_piece = None  # yes, exactly. Because I can
+
         # piece id -> macro piece id
         self.macro_piece_map = dict()
         # macro_id -> first normal id
         self.reverse_macro_map = dict()
         self.compute_macro_pieces()
+        self.compute_longest_straight()
 
     def compute_macro_pieces(self):
         self.macro_piece_map[0] = 0
@@ -29,6 +33,44 @@ class Track(object):
                 self.reverse_macro_map[last_macro_index] = index
             self.macro_piece_map[index] = last_macro_index
         print(self.macro_piece_map)
+
+    def compute_longest_straight(self):
+        origin_id = 0
+
+        # I want to start with a bend
+        while self.track_pieces[origin_id].is_straight:
+            origin_id += 1
+
+        cur_id = (origin_id + 1) % self.track_piece_count
+        best_id = None
+        best_length = 0.0
+
+        current_starting_id = None
+        current_length = 0.0
+        while cur_id != origin_id:
+            cur_piece = self.track_pieces[cur_id]
+            if not cur_piece.is_straight:
+                current_starting_id = None
+                current_length = 0.0
+            else:
+                # it's a straight
+                if current_starting_id is None:
+                    current_starting_id = cur_id
+                current_length += cur_piece.length
+
+                if current_length > best_length:
+                    best_length = current_length
+                    best_id = current_starting_id
+
+            cur_id = (cur_id + 1) % self.track_piece_count
+
+        self.index_of_the_beginning_of_the_longest_straight_piece = best_id
+        print("the longest straight begins on piece {0}!".format(best_id))
+        return best_id
+
+
+
+
 
     def radius(self, piece_index):
         return self.track_pieces[piece_index].radius
