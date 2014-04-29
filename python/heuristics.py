@@ -141,18 +141,25 @@ class Cruiser(BaseBot):
                 if len(same_lane_and_close):
                     #there is somebody to go around
 
-                    #TODO check if there is an opponent close'ish in front
                     dirs = car.possible_lane_switch_directions()
-                    dir = random.choice(dirs)
-                    car_other_lane = copy.copy(car)
-                    car_other_lane.start_lane_index += dir
-                    car_other_lane.end_lane_index += dir
-                    if physics.check_with_annealing(car_other_lane):
-                        print("going to switch lane to in the {0} direction".format(dir))
-                        self.switch_lane_int(dir, tick)
-                        return
+                    switch_direction = random.choice(dirs)
+
+                    target_lane = lane + switch_direction
+                    print('checking if there is somebody blocking the other lane - {0}, after going in {1} direction'.format(target_lane, switch_direction))
+                    opponents_on_target_lane = self.other_cars_on_lane_within_distance(target_lane, 250)
+                    if not opponents_on_target_lane:
+                        print("other lane is clear, let's see if physics says it is safe")
+                        car_other_lane = copy.copy(car)
+                        car_other_lane.start_lane_index += switch_direction
+                        car_other_lane.end_lane_index += switch_direction
+                        if physics.check_with_annealing(car_other_lane):
+                            print("going to switch lane to in the {0} direction".format(switch_direction))
+                            self.switch_lane_int(switch_direction, tick)
+                            return
+                        else:
+                            print("staying here, switching is not safe!")
                     else:
-                        print("staying here, switching is not safe!")
+                        print("somebody on the other lane, not switching now")
 
             if self.switch_initiated:
                 print('reducing speed to be safe')
