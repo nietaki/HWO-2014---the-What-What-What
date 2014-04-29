@@ -401,7 +401,10 @@ def distance_to_break(v0, target_velocity):
     lower_ending_index = max(0, lower_ending_index - 1)
     bigger_starting_index = bisect.bisect(breaking_helper_array, (v0, 3.14))
     bigger_starting_index = min(bigger_starting_index, len(breaking_helper_array) - 1)
-    return breaking_helper_array[bigger_starting_index][1] - breaking_helper_array[lower_ending_index][1]
+
+    ret = breaking_helper_array[bigger_starting_index][1] - breaking_helper_array[lower_ending_index][1]
+    print("distance to break from {0} to {1} equals {2}".format(v0, target_velocity, ret))
+    return ret
 
 def velocity_after_time(v0, n, throttle):
     """
@@ -420,9 +423,8 @@ def velocity_and_distance_step(v0, throttle):
     :returns (new_speed, distance_travelled) after one tick
     """
     v1 = v0 + (throttle * engine_potential() - v0 * d)
-    return v1, v0
-
-
+    #return v1, v0
+    return v1, v1
 
 def simulate_straight_with_breaking_to_speed(input_car, straight_length, target_velocity):
     """
