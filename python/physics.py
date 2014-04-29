@@ -350,6 +350,8 @@ def calculate_engine_power_from_first_tick(v0, throttle):
 def calculate_drag(v1, v2, throttle):
     """
     depends on knowing the engine power
+
+    also creates the breaking_helper_array
     :param v1: velocity before the throttle tick
     :param v2: velocity after the throttle tick
     :param throttle: the throttle set
@@ -383,9 +385,9 @@ def calculate_drag(v1, v2, throttle):
         for vd in vd_list:
             breaking_helper_array.append((vd[0], total_distance))
             total_distance += vd[1]
-        #print(breaking_helper_array)
-        #test = distance_to_break(9, 5)
-        #print("distance to break from 9 to 5 is {0}".format(test))
+        print(breaking_helper_array)
+        test = distance_to_break(9, 5)
+        print("distance to break from 9 to 5 is {0}".format(test))
 
 
 def distance_to_break(v0, target_velocity):

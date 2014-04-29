@@ -116,10 +116,11 @@ class Cruiser(BaseBot):
         cur_index = car.track_piece_index
 
         if not car.crashed:
-            if self.turbo_available:
-                self.turbo("I need to use the turbo ASAP!", tick)
+            # turning on Turbo at the beginning of the longest straight:
+            if cur_index == self.track.index_of_the_beginning_of_the_longest_straight_piece and self.turbo_available:
+                self.turbo("It's my time to shine!", tick)
                 return
-            cur_index = self.my_car().track_piece_index
+
             macro_index = self.track.macro_piece_map[cur_index]
             next_macro_beginning = self.track.reverse_macro_map[(macro_index + 1) % len(self.track.reverse_macro_map)]
             lane = car.lane()
@@ -132,31 +133,32 @@ class Cruiser(BaseBot):
             next_macro_radius = next_macro_beginning_piece.true_radius(lane)
             next_macro_target_speed = physics.estimate_stable_speed_at_angle(next_macro_radius, physics.crash_angle_buffered())
 
-            ### SWITCH ###
-            # thinking about switching
-            # only if next piece is a switch
-            if not car.is_switching() and not self.switch_initiated and self.track.next_piece(cur_index).switch and \
-                            len(self.track.lanes) > 1 and car.velocity > physics.safe_speed:
-                #TODO check if there is an opponent close'ish in front
-                dirs = car.possible_lane_switch_directions()
-                dir = random.choice(dirs)
-                car_other_lane = copy.copy(car)
-                car_other_lane.start_lane_index += dir
-                car_other_lane.end_lane_index += dir
-                if physics.check_with_annealing(car_other_lane):
-                    print("going to switch lane to in the {0} direction".format(dir))
-                    self.switch_lane_int(dir, tick)
-                    return
-                else:
-                    print("staying here, switching is not safe!")
+            #### SWITCH ###
+            ## thinking about switching
+            ## only if next piece is a switch
+            #if not car.is_switching() and not self.switch_initiated and self.track.next_piece(cur_index).switch and \
+            #                len(self.track.lanes) > 1 and car.velocity > physics.safe_speed:
+            #    #TODO check if there is an opponent close'ish in front
+            #    dirs = car.possible_lane_switch_directions()
+            #    dir = random.choice(dirs)
+            #    car_other_lane = copy.copy(car)
+            #    car_other_lane.start_lane_index += dir
+            #    car_other_lane.end_lane_index += dir
+            #    if physics.check_with_annealing(car_other_lane):
+            #        print("going to switch lane to in the {0} direction".format(dir))
+            #        self.switch_lane_int(dir, tick)
+            #        return
+            #    else:
+            #        print("staying here, switching is not safe!")
 
-            if self.switch_initiated:
-                print('reducing speed to be safe')
-                self.throttle(0.0, tick)
-                return
-            ### end SWITCH ###
+            #if self.switch_initiated:
+            #    print('reducing speed to be safe')
+            #    self.throttle(0.0, tick)
+            #    return
+            #### end SWITCH ###
 
             if car.current_track_piece().is_straight:
+                # straight!
                 should_run_like_hell = ((self.is_race() and \
                                          car.lap == self.lap_count() - 1) or \
                                         (not self.is_race() and car.last_crashed_lap != car.lap)) and \
