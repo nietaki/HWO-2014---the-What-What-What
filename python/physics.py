@@ -431,6 +431,7 @@ def simulate_straight_with_breaking_to_speed(input_car, straight_length, target_
     :type input_car: CarState
     """
     car = copy.copy(input_car)
+
     distance_left = straight_length
     while distance_left + velocity_and_distance_step(car.velocity, 1.0)[1] > distance_to_break(input_car.velocity, target_velocity):
         step(car, 1.0)

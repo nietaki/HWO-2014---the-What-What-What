@@ -186,9 +186,12 @@ class Cruiser(BaseBot):
                                                                                       True)
 
                 # planning the breaking, now with better values
-                next_velocity = physics.velocity_and_distance_step(car.velocity, 1.0)[1]
+                # checking if we can afford it
+                # velocity and travelled distance in one step of full throttle
+                next_velocity, next_distance = physics.velocity_and_distance_step(car.velocity, 1.0)
+                # distance needed to break
                 breaking_distance = physics.distance_to_break(next_velocity, max(deduced_speed, next_macro_target_speed))
-                if breaking_distance < distance_until_next_macro:
+                if breaking_distance + next_distance < distance_until_next_macro:
                     self.throttle(1.0, tick)
                 else:
                     self.throttle(0.0, tick)
