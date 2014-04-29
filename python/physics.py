@@ -225,7 +225,7 @@ class CarState(object):
                     if idx < len(keys_sorted) and r_v2_Mc_dict[old_r][keys_sorted[idx]] <= calculated_M_c:
                         print("NOT ADDING A TOO LARGE M_C")
                         return
-                    print("Adding new M_c value. M_c({0}, {1}^2) = {2}".format(old_r, old_v, calculated_M_c))
+                    #print("Adding new M_c value. M_c({0}, {1}^2) = {2}".format(old_r, old_v, calculated_M_c))
                     r_v2_Mc_dict[old_r][v2] = calculated_M_c
             else:
                 self.vaoMsq.clear()
@@ -386,8 +386,8 @@ def calculate_drag(v1, v2, throttle):
             breaking_helper_array.append((vd[0], total_distance))
             total_distance += vd[1]
         print(breaking_helper_array)
-        test = distance_to_break(9, 5)
-        print("distance to break from 9 to 5 is {0}".format(test))
+        #test = distance_to_break(9, 5)
+        #print("distance to break from 9 to 5 is {0}".format(test))
 
 
 def distance_to_break(v0, target_velocity):
@@ -403,7 +403,7 @@ def distance_to_break(v0, target_velocity):
     bigger_starting_index = min(bigger_starting_index, len(breaking_helper_array) - 1)
 
     ret = breaking_helper_array[bigger_starting_index][1] - breaking_helper_array[lower_ending_index][1]
-    print("distance to break from {0} to {1} equals {2}".format(v0, target_velocity, ret))
+    #print("distance to break from {0} to {1} equals {2}".format(v0, target_velocity, ret))
     return ret
 
 def velocity_after_time(v0, n, throttle):

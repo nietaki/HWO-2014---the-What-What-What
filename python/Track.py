@@ -32,6 +32,17 @@ class Track(object):
                 last_macro_index += 1
                 self.reverse_macro_map[last_macro_index] = index
             self.macro_piece_map[index] = last_macro_index
+
+        # now we might need to join the last and the first macro pieces
+        if self.track_pieces[self.reverse_macro_map[0]].same_as(self.track_pieces[self.reverse_macro_map[last_macro_index]]):
+            print("first and last macro are the same")
+            fixed_id = self.reverse_macro_map[last_macro_index]
+            while fixed_id != 0:
+                self.macro_piece_map[fixed_id] = 0
+                fixed_id = (fixed_id + 1) % self.track_piece_count
+            self.reverse_macro_map[0] = self.reverse_macro_map[last_macro_index]
+            self.reverse_macro_map.pop(last_macro_index)
+
         print(self.macro_piece_map)
 
     def compute_longest_straight(self):

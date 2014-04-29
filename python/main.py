@@ -47,7 +47,7 @@ if __name__ == "__main__":
         ##bot.run("germany")
         #bot.run('keimola', 4)
         #bot.run('germany')
-        bot.run('germany')
+        bot.run()
 
         #bot = ThresholdSpeedSearcher(s, name, key)
         #bot.cruising_speed = 2.5
