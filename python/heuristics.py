@@ -118,7 +118,7 @@ class Cruiser(BaseBot):
         if not car.crashed:
             # turning on Turbo at the beginning of the longest straight:
             if cur_index == self.track.index_of_the_beginning_of_the_longest_straight_piece and self.turbo_available:
-                self.turbo("It's my time to shine!", tick)
+                self.turbo("Buckle up!", tick)
                 return
 
             macro_index = self.track.macro_piece_map[cur_index]
@@ -137,7 +137,7 @@ class Cruiser(BaseBot):
             # should we consider switching? - is next piece a switch and is it legal now?
             if not car.is_switching() and not self.switch_initiated and self.track.next_piece(cur_index).switch and \
                             len(self.track.lanes) > 1 and car.velocity > physics.safe_speed:
-                same_lane_and_close = self.other_cars_on_lane_within_distance(lane, 150)
+                same_lane_and_close = self.other_cars_on_lane_within_distance(lane, 175)
                 if len(same_lane_and_close):
                     #there is somebody to go around
 
@@ -169,15 +169,14 @@ class Cruiser(BaseBot):
 
             if car.current_track_piece().is_straight:
                 # straight!
-                should_run_like_hell = ((self.is_race() and \
-                                         car.lap == self.lap_count() - 1) or \
-                                        (not self.is_race() and car.last_crashed_lap != car.lap)) and \
+                should_run_like_hell =   self.is_race() and \
+                                         car.lap == self.lap_count() - 1 and \
                                          macro_index == len(self.track.reverse_macro_map) - 1 and \
                                          car.current_track_piece().is_straight
                 if should_run_like_hell:
                     print("gotta go fast!")
                     if self.turbo_available:
-                        self.turbo("it's my last chance at fame and fortune!", tick)
+                        self.turbo("Strap yourselves in boys!", tick)
                     else:
                         self.throttle(1.0, tick)
                     return

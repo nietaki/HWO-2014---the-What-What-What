@@ -385,7 +385,7 @@ def calculate_drag(v1, v2, throttle):
         for vd in vd_list:
             breaking_helper_array.append((vd[0], total_distance))
             total_distance += vd[1]
-        print(breaking_helper_array)
+        #print(breaking_helper_array)
         #test = distance_to_break(9, 5)
         #print("distance to break from 9 to 5 is {0}".format(test))
 

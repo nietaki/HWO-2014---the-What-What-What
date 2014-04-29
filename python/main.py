@@ -64,8 +64,8 @@ if __name__ == "__main__":
         #    bot = Cruiser(s, name, key)
         #    bot.run('keimola', bot_count, password)
         bot = Cruiser(s, name, key)
-        #bot.run('france', 5, 'foo')
         bot.run()
+        #bot.run()
         #bot = ThresholdSpeedSearcher(s, name, key)
         #bot.cruising_speed = 2.5
         #bot.targeted_radius = 60

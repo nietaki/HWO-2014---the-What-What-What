@@ -276,12 +276,12 @@ class BaseBot(object):
 
     def save_csv(self):
         print(physics.r_v2_Mc_dict)
-        with open('debug_output/' + self.csv_filename, 'wb') as f:
-            writer = csv.DictWriter(f, csv_handler.csv_keys(self.my_car()))
-            writer.writeheader()
-            writer.writerows(self.lines)
+        #with open('debug_output/' + self.csv_filename, 'wb') as f:
+        #    writer = csv.DictWriter(f, csv_handler.csv_keys(self.my_car()))
+        #    writer.writeheader()
+        #    writer.writerows(self.lines)
 
-        print("closing csv")
+        #print("closing csv")
 
     def on_game_end_base(self, data, tick):
         self.save_csv()
@@ -330,11 +330,11 @@ class BaseBot(object):
 
             if msg_type == 'gameInit':
                 track_name = data['race']['track']['id']
-                #let me dump me some track, but just once
-                filename = 'tracks/{0}.json'.format(track_name)
-                if not os.path.exists(filename):
-                    with open('tracks/' + track_name + '.json', 'w') as handle:
-                        handle.write(line)
+                ##let me dump me some track, but just once
+                #filename = 'tracks/{0}.json'.format(track_name)
+                #if not os.path.exists(filename):
+                #    with open('tracks/' + track_name + '.json', 'w') as handle:
+                #        handle.write(line)
 
             if msg_type in msg_map:
                 msg_map[msg_type](data, tick)
