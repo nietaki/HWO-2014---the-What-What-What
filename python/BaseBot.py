@@ -137,6 +137,12 @@ class BaseBot(object):
         for car in race['cars']:
             car_object = physics.CarState(self.track, car)
             self.cars[car_object.color] = car_object
+
+
+        self.switch_initiated = False
+        self.turbo_available = False
+        self.turbo_active = False
+
         self.on_game_init(data, tick)
 
     def on_game_init(self, data, tick):
